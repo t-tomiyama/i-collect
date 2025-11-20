@@ -24,14 +24,12 @@ import { Header } from "../../components/Header";
 import { SearchPage } from "../SearchPage/SearchPage";
 import { BinderPage } from "../BinderPage/BinderPage";
 import Payments from "../Payments/Payments";
-import DetailsModal from "../../components/DetailsModal/DetailsModal"; // Ajuste o caminho se necessário
+import DetailsModal from "../../components/DetailsModal";
 import "../SearchPage/SearchPage.css";
 import Footer from "../../components/Footer";
 
-// Adicionado searchAPI para buscar detalhes
 import { dashboardAPI, paymentsAPI, searchAPI } from "../../services/api";
 
-// ... (Mantenha o MOCK_GUEST_DATA e THEMES como estavam) ...
 const MOCK_GUEST_DATA = {
   stats: {
     totalPhotocards: 127,
@@ -55,7 +53,6 @@ const MOCK_GUEST_DATA = {
       ceg_name: "CEG XG",
       late_fee: 0,
     },
-    // ... outros itens mockados
   ],
   recentActivity: [],
 };
@@ -75,7 +72,6 @@ const THEMES = {
   gray: { name: "Cinza" },
 };
 
-// ... (Mantenha o PaymentModal como estava) ...
 const PaymentModal = ({ isVisible, onClose, payments, onPaymentSubmit }) => {
   if (!isVisible) return null;
 
@@ -203,7 +199,6 @@ const DashboardHome = ({
     recentActivity = [],
   } = dashboardData;
 
-  // --- NOVA FUNÇÃO PARA ABRIR DETALHES ---
   const handleOpenItemDetails = async (type, id) => {
     // Se for mock guest, não tenta buscar na API
     if (user?.isGuest || String(id).startsWith("guest")) {
