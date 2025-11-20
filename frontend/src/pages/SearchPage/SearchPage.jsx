@@ -1,15 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Search, Music, Users, Package, User, X } from "lucide-react";
-import DetailsModal from "../../components/DetailsModal";
 import "./SearchPage.css";
 
 const API_URL = "https://i-collect-backend.onrender.com/api";
-
-const TYPE_EXPLANATIONS = {
-  Regular: "Photocard regular que vem dentro do álbum.",
-  "Lucky Draw": "Photocard especial obtido em sorteios de eventos.",
-  POB: "Pre-Order Benefit. Brinde exclusivo de pré-venda.",
-};
 
 const FILTERS = [
   { id: "photocards", name: "Photocards", icon: Package },
@@ -18,7 +11,16 @@ const FILTERS = [
   { id: "artists", name: "Artistas/Grupos", icon: Users },
 ];
 
+const CD_IMG_LIGHT = "https://i.postimg.cc/ZqhVJxg3/CD.png";
+const CD_IMG_DARK =
+  "https://www.pngall.com/wp-content/uploads/13/CD-Blank-PNG-Clipart.png";
+
 const ReleaseCard = ({ title, artist, coverUrl, onClick }) => {
+  const isDarkMode =
+    document.body.classList.contains("dark") ||
+    document.getElementById("i-collect-dashboard")?.classList.contains("dark");
+
+  const cdImage = isDarkMode ? CD_IMG_DARK : CD_IMG_LIGHT;
   return (
     <div
       className="release-card"
@@ -26,11 +28,7 @@ const ReleaseCard = ({ title, artist, coverUrl, onClick }) => {
       style={{ cursor: "pointer" }}
     >
       <div className="release-card__content">
-        <img
-          src="https://i.postimg.cc/ZqhVJxg3/CD.png"
-          alt="CD"
-          className="release-card__cd"
-        />
+        <img src={cdImage} alt="CD" className="release-card__cd" />
         <img
           src={coverUrl}
           alt={`${title} cover`}
@@ -51,23 +49,28 @@ export const SearchPage = ({ initialQuery = "" }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Estados de Dados
   const [photocards, setPhotocards] = useState([]);
   const [releases, setReleases] = useState([]);
   const [idols, setIdols] = useState([]);
   const [artists, setArtists] = useState([]);
 
-  // Estados do Modal
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState("");
   const [modalData, setModalData] = useState(null);
   const [modalLoading, setModalLoading] = useState(false);
+  const [isFlippedInModal, setIsFlippedInModal] = useState(false);
 
   useEffect(() => {
     if (initialQuery) {
       setSearchQuery(initialQuery);
     }
   }, [initialQuery]);
+
+  // Efeito para bloquear o scroll e escurecer o fundo (Igual BinderPage)
+  useEffect(() => {
+    if (modalOpen) document.body.classList.add("info-visible");
+    else document.body.classList.remove("info-visible");
+  }, [modalOpen]);
 
   // Buscar dados iniciais
   useEffect(() => {
@@ -87,6 +90,7 @@ export const SearchPage = ({ initialQuery = "" }) => {
 
     setModalOpen(true);
     setModalLoading(true);
+    setIsFlippedInModal(false); // Reseta o flip ao abrir
     setModalType(type);
     setModalData(null);
 
@@ -110,6 +114,19 @@ export const SearchPage = ({ initialQuery = "" }) => {
       setModalLoading(false);
     }
   };
+
+  // Função para o efeito holográfico/brilho (Copiado do BinderPage)
+  const handleMouseMove = (e) => {
+    const card = e.currentTarget;
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    card.style.setProperty("--x", `${x}px`);
+    card.style.setProperty("--y", `${y}px`);
+    card.style.setProperty("--bg-x", `${(x / rect.width) * 100}%`);
+    card.style.setProperty("--bg-y", `${(y / rect.height) * 100}%`);
+  };
+
   const fetchInitialData = async () => {
     setLoading(true);
     setError("");
@@ -264,20 +281,214 @@ export const SearchPage = ({ initialQuery = "" }) => {
     filteredIdols.length > 0 ||
     filteredArtists.length > 0;
 
-  const showInitialState = !searchQuery && !loading;
   const showNoResults = searchQuery && !loading && !hasResults;
+
+  // Helper para pegar a imagem correta dependendo do tipo
+  const getModalImage = () => {
+    if (!modalData) return "";
+    if (modalType === "photocards")
+      return modalData.image || modalData.front_image || modalData.image_url;
+    if (modalType === "releases") return modalData.cover;
+    return modalData.image;
+  };
+
+  // Helper para pegar o subtítulo correto
+  const getModalSubtitle = () => {
+    if (!modalData) return "";
+    if (modalType === "photocards")
+      return `${modalData.group || modalData.artist_name} | ${
+        modalData.idol || modalData.stage_name
+      }`;
+    if (modalType === "releases") return modalData.artist_name;
+    if (modalType === "idols") return modalData.artist_name || modalData.group;
+    if (modalType === "artists") return modalData.category;
+    return "";
+  };
 
   return (
     <div className="search-page-container">
-      {/* --- MODAL INSERIDO AQUI --- */}
-      <DetailsModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        type={modalType}
-        data={modalData}
-        loading={modalLoading}
-        onRelatedClick={handleCardClick}
-      />
+      {/* --- MODAL ESTILO BINDER PAGE --- */}
+      {modalOpen && (
+        <>
+          <div
+            id="info-box-overlay"
+            onClick={() => setModalOpen(false)}
+            className={modalOpen ? "is-open" : ""}
+          ></div>
+
+          <div id="info-box">
+            <button id="info-box-close" onClick={() => setModalOpen(false)}>
+              &times;
+            </button>
+
+            {modalLoading || !modalData ? (
+              <div style={{ padding: "40px", textAlign: "center" }}>
+                <div className="loading-spinner"></div>
+                <p>Carregando detalhes...</p>
+              </div>
+            ) : (
+              <>
+                <h2 className="modal-title">
+                  {modalData.name || modalData.stage_name || "Detalhes"}
+                </h2>
+
+                <div className="modal-card-scene">
+                  <div
+                    className={`modal-card-inner ${
+                      isFlippedInModal ? "is-flipped" : ""
+                    }`}
+                  >
+                    {/* FRENTE DO CARD */}
+                    <div
+                      className="modal-card-face modal-card-front"
+                      style={{
+                        backgroundColor: "#fff", // Default white, já que na busca não temos "sleeveColor"
+                        padding: "10px",
+                      }}
+                    >
+                      <div
+                        className={`card ${
+                          modalType === "photocards" ? "glossy-card" : ""
+                        }`} // Adiciona efeito glossy se for photocard
+                        style={{
+                          backgroundImage: `url('${getModalImage()}')`,
+                          width: "100%",
+                          height: "100%",
+                          backgroundSize: "cover",
+                          backgroundPosition: "center",
+                        }}
+                        onMouseMove={handleMouseMove}
+                      >
+                        {/* Se quiser adicionar lógica de lenticular aqui, pode, mas a API precisaria retornar img2 */}
+                      </div>
+                    </div>
+
+                    {/* VERSO DO CARD */}
+                    <div
+                      className="modal-card-face modal-card-back"
+                      style={{
+                        backgroundColor: "#fff",
+                        padding: "10px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexDirection: "column",
+                        textAlign: "center",
+                      }}
+                    >
+                      {modalData.back_image ? (
+                        <img
+                          src={modalData.back_image}
+                          alt="Verso"
+                          className="modal-img-display"
+                        />
+                      ) : (
+                        // Fallback para quando não tem imagem de verso (Releases, Artists, Idols geralmente não tem)
+                        <div style={{ padding: "20px", color: "#555" }}>
+                          <h3>{modalData.name || modalData.stage_name}</h3>
+                          <p style={{ fontSize: "0.9rem", marginTop: "10px" }}>
+                            {modalData.description || getModalSubtitle()}
+                          </p>
+                          <div style={{ marginTop: "20px", opacity: 0.5 }}>
+                            <Music size={32} />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="modal-controls">
+                  <button
+                    className="modal-action-btn"
+                    onClick={() => setIsFlippedInModal(!isFlippedInModal)}
+                    title={isFlippedInModal ? "Ver Frente" : "Ver Verso"}
+                  >
+                    <span className="material-symbols-outlined">360</span>
+                    {isFlippedInModal ? "Frente" : "Verso"}
+                  </button>
+
+                  {/* Botão de Adicionar (Simulado, já que é busca) */}
+                  <button
+                    className="modal-action-btn secondary"
+                    onClick={() =>
+                      alert("Funcionalidade de adicionar à coleção em breve!")
+                    }
+                  >
+                    <span className="material-symbols-outlined">add</span>{" "}
+                    Coleção
+                  </button>
+                </div>
+
+                <div className="modal-info-details">
+                  {/* Renderização Condicional dos Detalhes baseada no Tipo */}
+
+                  {modalType === "photocards" && (
+                    <>
+                      <div className="info-row">
+                        <span className="label">Grupo/Artista:</span>
+                        <span className="value">
+                          {modalData.artist_name || modalData.group || "N/A"}
+                        </span>
+                      </div>
+                      <div className="info-row">
+                        <span className="label">Idol:</span>
+                        <span className="value">
+                          {modalData.idol || modalData.stage_name || "N/A"}
+                        </span>
+                      </div>
+                      <div className="info-row">
+                        <span className="label">Era/Album:</span>
+                        <span className="value">
+                          {modalData.album_name || "N/A"}
+                        </span>
+                      </div>
+                    </>
+                  )}
+
+                  {modalType === "releases" && (
+                    <>
+                      <div className="info-row">
+                        <span className="label">Artista:</span>
+                        <span className="value">{modalData.artist_name}</span>
+                      </div>
+                      <div className="info-row">
+                        <span className="label">Data:</span>
+                        <span className="value">
+                          {modalData.release_date || "N/A"}
+                        </span>
+                      </div>
+                      <div className="info-row">
+                        <span className="label">Tipo:</span>
+                        <span className="value">
+                          {modalData.type || "Album"}
+                        </span>
+                      </div>
+                    </>
+                  )}
+
+                  {(modalType === "idols" || modalType === "artists") && (
+                    <>
+                      <div className="info-row">
+                        <span className="label">Nome:</span>
+                        <span className="value">{modalData.name}</span>
+                      </div>
+                      <div className="info-row">
+                        <span className="label">Categoria:</span>
+                        <span className="value">
+                          {modalData.category || "K-Pop"}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </>
+      )}
+      {/* --- FIM DO MODAL --- */}
+
       <div className="search-bar-wrapper">
         <Search className="search-bar__icon" size={20} />
         <input
