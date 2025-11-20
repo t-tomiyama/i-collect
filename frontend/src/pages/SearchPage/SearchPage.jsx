@@ -228,7 +228,6 @@ export const SearchPage = ({ initialQuery = "" }) => {
     filteredIdols.length > 0 ||
     filteredArtists.length > 0;
 
-  const showInitialState = !searchQuery && !loading;
   const showNoResults = searchQuery && !loading && !hasResults;
 
   return (
@@ -314,22 +313,6 @@ export const SearchPage = ({ initialQuery = "" }) => {
           <Search size={48} style={{ marginBottom: "1rem", opacity: 0.5 }} />
           <h3>Nenhum resultado encontrado para "{searchQuery}"</h3>
           <p>Tente termos diferentes ou remova os filtros.</p>
-        </div>
-      )}
-
-      {showInitialState && (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "3rem",
-            color: "var(--color-text-muted)",
-          }}
-        >
-          <Search size={48} style={{ marginBottom: "1rem", opacity: 0.5 }} />
-          <h3>Comece a pesquisar</h3>
-          <p>
-            Digite termos como nome de artistas, álbuns, idols ou photocards
-          </p>
         </div>
       )}
 
