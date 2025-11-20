@@ -160,8 +160,13 @@ export function Header({
                   </button>
                 </div>
                 <div className="notifications__list">
-                  {/* Notificação Estática de Boas-Vindas */}
                   <div className="notifications__item unread welcome-notification">
+                    <div className="notifications__item-icon-wrapper">
+                      <Sparkles
+                        size={18}
+                        className="notifications__item-icon"
+                      />
+                    </div>
                     <div className="notifications__item-icon-wrapper">
                       <Sparkles
                         size={18}
@@ -171,23 +176,18 @@ export function Header({
                     <div className="notifications__item-content">
                       <div className="notifications__item-header">
                         <p style={{ fontWeight: "bold" }}>
-                          Bem-vindo ao i-collect!
+                          Utilizar login de teste:
                         </p>
                         <span style={{ fontSize: "0.7rem" }}>Agora</span>
                       </div>
-                      <p className="notifications__item-desc">
-                        O sistema está ativo. Confira os recursos funcionais:
-                      </p>
-
-                      {/* LISTA MELHORADA (Classes CSS em vez de style inline) */}
                       <ul className="notifications__feature-list">
                         <li className="notifications__feature-item">
                           <CheckCircle2 size={14} className="feature-icon" />
-                          <span>Busca de Artistas, Álbuns e Idols</span>
+                          <span>shenmaomao@gmail.com</span>
                         </li>
                         <li className="notifications__feature-item">
                           <CheckCircle2 size={14} className="feature-icon" />
-                          <span>Organização de Binders</span>
+                          <span>y0n6eR*c1H%</span>
                         </li>
                       </ul>
                     </div>
