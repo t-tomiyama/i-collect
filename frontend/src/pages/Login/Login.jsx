@@ -11,8 +11,19 @@ import {
 } from "lucide-react";
 import "../../App.css";
 
-// URL do seu backend no Render (ajuste conforme necessário)
-const API_URL = "https://i-collect-backend.onrender.com//api";
+const API_URL = "https://i-collect-backend.onrender.com/api";
+
+const setCookie = (name, value, days) => {
+  let expires = "";
+  if (days) {
+    const date = new Date();
+    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+    expires = "; expires=" + date.toUTCString();
+  }
+  // Define o cookie (Path=/ garante que funciona em todas as páginas)
+  document.cookie =
+    name + "=" + (value || "") + expires + "; path=/; SameSite=Strict";
+};
 
 const PhotocardsBackground = () => {
   const HeartIcon = () => (
@@ -30,7 +41,6 @@ const PhotocardsBackground = () => {
 
   return (
     <div className="photocards-bg">
-      {/* Cards mantidos igual ao original */}
       <div className="photocard card-1">
         <div className="card-inner bg-pink">
           <HeartIcon />
@@ -68,13 +78,14 @@ const PhotocardsBackground = () => {
 const Login = ({ onLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
-  const [error, setError] = useState(""); // Estado para erros
-  const [isLoading, setIsLoading] = useState(false); // Estado de carregamento
+  const [rememberMe, setRememberMe] = useState(false); // Estado para o checkbox
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError(""); // Limpa o erro ao digitar
+    setError("");
   };
 
   const handleSubmit = async (e) => {
@@ -92,8 +103,24 @@ const Login = ({ onLogin }) => {
       const data = await response.json();
 
       if (data.success) {
-        // Passa o usuário e o token para o App.js
-        onLogin(data.data.user, data.data.token);
+        // Lógica de Cookies e Sessão
+        const token = data.data.token;
+        const user = data.data.user;
+
+        // Se "Lembrar de mim" estiver marcado, cookie dura 7 dias.
+        // Se não, cookie dura apenas a sessão (até fechar o navegador).
+        const daysToExpire = rememberMe ? 7 : null;
+
+        setCookie("authToken", token, daysToExpire);
+
+        // Salva dados do usuário no localStorage para acesso fácil
+        localStorage.setItem("user", JSON.stringify(user));
+
+        // Atualiza estado global da aplicação (se existir)
+        if (onLogin) {
+          onLogin(user, token);
+        }
+
         navigate("/dashboard");
       } else {
         setError(data.error || "Falha ao fazer login");
@@ -119,7 +146,6 @@ const Login = ({ onLogin }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="login-form">
-          {/* Mensagem de Erro */}
           {error && (
             <div
               className="error-message"
@@ -178,7 +204,11 @@ const Login = ({ onLogin }) => {
 
           <div className="form-options">
             <label className="remember-me">
-              <input type="checkbox" />
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
               <span>Lembrar de mim</span>
             </label>
             <a
@@ -201,7 +231,6 @@ const Login = ({ onLogin }) => {
           </button>
         </form>
 
-        {/* Resto do componente (Botão visitante, social login, etc) mantido igual */}
         <button
           type="button"
           className="btn guest-button"
