@@ -490,12 +490,19 @@ const DashboardHome = ({
                   </>
                 ) : (
                   <>
-                    <Link to="/register" className="btn btn-primary">
-                      Criar Conta Real
-                    </Link>
-                    <Link to="/login" className="btn btn-secondary">
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => navigate("/register")}
+                    >
+                      Criar Conta
+                    </button>
+
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => navigate("/login")}
+                    >
                       Fazer Login
-                    </Link>
+                    </button>
                   </>
                 )}
               </div>
@@ -760,7 +767,6 @@ const DashboardHome = ({
               <button
                 className="btn btn-secondary"
                 onClick={() => navigate("/payments")}
-                disabled={user.isGuest}
               >
                 Ver Todos os Pagamentos
               </button>
