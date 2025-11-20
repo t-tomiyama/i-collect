@@ -2,13 +2,11 @@
 import axios from "axios";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-// Configuração base do axios com interceptors
 const api = axios.create({
   baseURL: API_URL,
   timeout: 10000,
 });
 
-// Interceptor para adicionar token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("authToken");
@@ -20,9 +18,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// API específica para o Dashboard
 export const dashboardAPI = {
-  // Buscar dados do dashboard
   getDashboardData: async (userId) => {
     const response = await api.get(`/api/dashboard/${userId}`);
     return response.data;

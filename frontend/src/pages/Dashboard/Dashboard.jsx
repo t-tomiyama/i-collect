@@ -11,13 +11,10 @@ import {
   Wallet,
   Eye,
   EyeOff,
-  MessageSquare,
   Search,
   Hammer,
   Plus,
   ShoppingCart,
-  Users,
-  TrendingUp,
   RefreshCw,
 } from "lucide-react";
 import "../../App.css";
@@ -30,13 +27,76 @@ import Payments from "../Payments/Payments";
 import "../SearchPage/SearchPage.css";
 import Footer from "../../components/Footer";
 
-// Serviços de API para integrar com o banco
-import {
-  dashboardAPI,
-  paymentsAPI,
-  bindersAPI,
-  collectorsAPI,
-} from "../../services/api";
+import { dashboardAPI, paymentsAPI } from "../../services/api";
+
+const MOCK_GUEST_DATA = {
+  stats: {
+    totalPhotocards: 127,
+    activeCEGs: 3,
+    wishlistCount: 12,
+    photocardsThisWeek: 4,
+    cegsArriving: 1,
+    recentWishlistAdds: 2,
+  },
+  pendingPayments: [
+    {
+      id: "guest-1",
+      photocard_name: "Hinata - Woke Up (Apple Music POB)",
+      photocard_image:
+        "https://i.pinimg.com/736x/59/f8/0d/59f80d212b56d7b7efab33118606f35d.jpg",
+      amount: 45.0,
+      seller_name: "lovejurin",
+      due_date: new Date().toISOString(), // Vence hoje
+      status: "vence hoje",
+      payment_type: "Item + Frete",
+      ceg_name: "CEG XG",
+      late_fee: 0,
+    },
+    {
+      id: "guest-2",
+      photocard_name: "Chisa - AWE POB",
+      photocard_image:
+        "https://i.pinimg.com/736x/1a/ce/56/1ace56135e1c1d76149ab35f0bcce8c5.jpg",
+      amount: 120.0,
+      seller_name: "lovejurin",
+      due_date: new Date(Date.now() + 86400000 * 2).toISOString(), // +2 dias
+      status: "pendente",
+      payment_type: "Item",
+      ceg_name: "CEG XG Mascara",
+      late_fee: 0,
+    },
+    {
+      id: "guest-3",
+      photocard_name: "Maya - AWE",
+      photocard_image:
+        "https://i.pinimg.com/736x/9a/45/f4/9a45f486eca3c11f9a2fe4a40fd85690.jpg",
+      amount: 55.5,
+      seller_name: "alphaztore",
+      due_date: new Date(Date.now() - 86400000).toISOString(), // -1 dia (atrasado)
+      status: "atrasado",
+      payment_type: "Frete Nacional",
+      ceg_name: "Envios da Maya",
+      late_fee: 2.5,
+    },
+  ],
+  recentActivity: [
+    {
+      type: "photocard_added",
+      description: "Jurin - Left Right adicionado à coleção",
+      time: "2 horas atrás",
+    },
+    {
+      type: "wishlist_added",
+      description: "Harvey - Puppet Show adicionado à wishlist",
+      time: "5 horas atrás",
+    },
+    {
+      type: "payment_made",
+      description: "Pagamento de Juria realizado",
+      time: "Ontem",
+    },
+  ],
+};
 
 const THEMES = {
   red: { name: "Vermelho" },
@@ -213,6 +273,15 @@ const DashboardHome = ({
   const handlePaymentSubmit = async () => {
     if (selectedPayments.length === 0) return;
 
+    // BLOQUEIO PARA GUEST
+    if (user?.isGuest) {
+      alert(
+        "Modo Visitante: O pagamento não pode ser processado, pois é apenas uma simulação."
+      );
+      setIsModalOpen(false);
+      return;
+    }
+
     try {
       setProcessingPayment(true);
       await paymentsAPI.processPayments(selectedPayments);
@@ -326,12 +395,14 @@ const DashboardHome = ({
           <div className="welcome-banner">
             <div className="welcome-banner__content">
               <h2 className="welcome-banner__title">
-                {user
-                  ? `Bem-vindo(a), ${user.user_name || user.name}!`
-                  : "Bem-vindo(a), Visitante!"}
+                {user?.isGuest
+                  ? "Bem-vindo(a), Visitante!"
+                  : `Bem-vindo(a), ${
+                      user?.user_name || user?.name || "Colecionador"
+                    }!`}
               </h2>
 
-              {user ? (
+              {user && !user.isGuest ? (
                 <p className="welcome-banner__subtitle">
                   {stats.photocardsThisWeek > 0 ? (
                     <>
@@ -355,12 +426,16 @@ const DashboardHome = ({
                 </p>
               ) : (
                 <p className="welcome-banner__subtitle">
-                  Crie uma conta para desbloquear todas as ferramentas!
+                  Você está no <strong>Modo Visitante</strong>. Dados mostrados
+                  abaixo são apenas para demonstração, acesse Catálogo para
+                  pesquisar artistas e photocards no nosso banco.{" "}
+                  <strong>Clique em notificações</strong> para ver uma conta de
+                  teste.
                 </p>
               )}
 
               <div className="welcome-banner__actions">
-                {user ? (
+                {user && !user.isGuest ? (
                   <>
                     <button
                       className="btn btn-primary"
@@ -398,7 +473,7 @@ const DashboardHome = ({
                 ) : (
                   <>
                     <Link to="/register" className="btn btn-primary">
-                      Criar Conta
+                      Criar Conta Real
                     </Link>
                     <Link to="/login" className="btn btn-secondary">
                       Fazer Login
@@ -499,7 +574,7 @@ const DashboardHome = ({
                 </div>
                 <div>
                   <h2 className="payment-schedule__title">
-                    Pagamentos Pendentes
+                    Pagamentos Pendentes {user.isGuest && "(Simulação)"}
                   </h2>
                   <p className="payment-schedule__subtitle">
                     Acompanhe seus pagamentos de CEGs e compras
@@ -657,6 +732,7 @@ const DashboardHome = ({
               <button
                 className="btn btn-secondary"
                 onClick={() => navigate("/payments")}
+                disabled={user.isGuest}
               >
                 Ver Todos os Pagamentos
               </button>
@@ -671,34 +747,6 @@ const DashboardHome = ({
             </div>
             <h3>Nenhum pagamento pendente</h3>
             <p>Todos os seus pagamentos estão em dia! 🎉</p>
-          </div>
-        )}
-
-        {user && recentActivity.length > 0 && (
-          <div className="recent-activity">
-            <h2>Atividade Recente</h2>
-            <div className="activity-list">
-              {recentActivity.map((activity, index) => (
-                <div key={index} className="activity-item">
-                  <div className="activity-icon">
-                    {activity.type === "photocard_added" && (
-                      <BookOpen size={16} />
-                    )}
-                    {activity.type === "wishlist_added" && <Heart size={16} />}
-                    {activity.type === "payment_made" && (
-                      <CreditCard size={16} />
-                    )}
-                    {activity.type === "binder_created" && (
-                      <BookHeart size={16} />
-                    )}
-                  </div>
-                  <div className="activity-content">
-                    <p className="activity-text">{activity.description}</p>
-                    <span className="activity-time">{activity.time}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         )}
       </div>
@@ -743,23 +791,29 @@ function Dashboard({ onLogout, user }) {
   const loadDashboardData = async () => {
     if (!user) return;
 
+    setLoading(true);
+
+    // --- CORREÇÃO PARA ERRO NA PORTA 5000 ---
+    // Se for Visitante, carrega o MOCK local e NÃO chama o backend
+    if (user.isGuest || user.id === "guest") {
+      console.log("Modo Visitante: Carregando dados Mockados...");
+      // Simula um delay pequeno para parecer natural
+      setTimeout(() => {
+        setDashboardData(MOCK_GUEST_DATA);
+        setLoading(false);
+      }, 500);
+      return; // Interrompe aqui para não dar erro no fetch
+    }
+    // ---------------------------------------
+
     try {
-      setLoading(true);
       const data = await dashboardAPI.getDashboardData(user.id);
       setDashboardData(data);
     } catch (error) {
       console.error("Erro ao carregar dados do dashboard:", error);
       // Fallback para dados mock em caso de erro
       setDashboardData({
-        stats: {
-          totalPhotocards: 34,
-          totalBinders: 3,
-          activeCEGs: 8,
-          wishlistCount: 12,
-          photocardsThisWeek: 12,
-          cegsArriving: 2,
-          recentWishlistAdds: 3,
-        },
+        stats: {},
         pendingPayments: [],
         recentActivity: [],
       });

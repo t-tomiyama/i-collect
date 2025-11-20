@@ -1466,9 +1466,6 @@ body.labeled-mode-active .status-icon-container {
   color: var(--theme-text);
 }
 
-.modal-header {
-}
-
 .search-filter-section {
   flex: 1;
   min-width: 350px;

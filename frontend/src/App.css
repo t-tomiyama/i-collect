@@ -1312,6 +1312,7 @@ button {
   justify-content: center;
   gap: 0.5rem;
   font-family: "Nunito", sans-serif;
+  text-decoration: none;
 }
 .btn:active {
   transform: scale(0.98);

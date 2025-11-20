@@ -20,7 +20,6 @@ const setCookie = (name, value, days) => {
     date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
     expires = "; expires=" + date.toUTCString();
   }
-  // Define o cookie (Path=/ garante que funciona em todas as páginas)
   document.cookie =
     name + "=" + (value || "") + expires + "; path=/; SameSite=Strict";
 };
@@ -78,7 +77,7 @@ const PhotocardsBackground = () => {
 const Login = ({ onLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
-  const [rememberMe, setRememberMe] = useState(false); // Estado para o checkbox
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -88,12 +87,34 @@ const Login = ({ onLogin }) => {
     setError("");
   };
 
+  // FUNÇÃO PARA ACESSAR COMO VISITANTE
+  const handleGuestAccess = () => {
+    // Cria um usuário fictício para a sessão
+    const guestUser = {
+      id: "guest",
+      name: "Visitante",
+      email: "guest@icollect.com",
+      isGuest: true, // Flag importante para controlar acesso no Dashboard
+    };
+
+    // Salva no localStorage para persistir se der refresh
+    localStorage.setItem("user", JSON.stringify(guestUser));
+
+    // Chama a função de login do App.js
+    if (onLogin) {
+      onLogin(guestUser, null); // Token null
+    }
+
+    navigate("/dashboard");
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
 
     try {
+      // Tenta conectar com o backend no Render
       const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -103,20 +124,13 @@ const Login = ({ onLogin }) => {
       const data = await response.json();
 
       if (data.success) {
-        // Lógica de Cookies e Sessão
         const token = data.data.token;
-        const user = data.data.user;
+        const user = { ...data.data.user, isGuest: false }; // Garante que não é guest
 
-        // Se "Lembrar de mim" estiver marcado, cookie dura 7 dias.
-        // Se não, cookie dura apenas a sessão (até fechar o navegador).
         const daysToExpire = rememberMe ? 7 : null;
-
         setCookie("authToken", token, daysToExpire);
-
-        // Salva dados do usuário no localStorage para acesso fácil
         localStorage.setItem("user", JSON.stringify(user));
 
-        // Atualiza estado global da aplicação (se existir)
         if (onLogin) {
           onLogin(user, token);
         }
@@ -234,7 +248,7 @@ const Login = ({ onLogin }) => {
         <button
           type="button"
           className="btn guest-button"
-          onClick={() => navigate("/dashboard")}
+          onClick={handleGuestAccess}
         >
           <span>Acessar como visitante</span>
         </button>
@@ -243,7 +257,7 @@ const Login = ({ onLogin }) => {
           <span className="divider-text">ou conecte-se com</span>
         </div>
 
-        <div className="social-login">{/* ... botões sociais ... */}</div>
+        <div className="social-login"></div>
 
         <p className="signup-text">
           Novo por aqui?{" "}
