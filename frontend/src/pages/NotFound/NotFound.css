@@ -1,0 +1,124 @@
+.not-found-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  padding: 2rem;
+  text-align: center;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.not-found-content {
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  position: relative;
+  z-index: 10;
+}
+
+.icon-wrapper {
+  position: relative;
+  margin-top: 1rem;
+  color: var(--theme-primary);
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.floating-ghost {
+  animation: float 3s ease-in-out infinite;
+}
+
+.shadow {
+  width: 40px;
+  height: 8px;
+  background-color: var(--color-shadow);
+  border-radius: 50%;
+  position: absolute;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: shadow-scale 3s ease-in-out infinite;
+}
+
+.error-code {
+  font-size: 6rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--theme-primary);
+  opacity: 0.15;
+  position: absolute;
+  z-index: -1;
+  top: 10%;
+  pointer-events: none;
+  user-select: none;
+}
+
+.error-title {
+  font-size: 2rem;
+  font-weight: 800;
+  z-index: 1;
+  margin: 0;
+}
+
+.error-message {
+  color: var(--color-text-muted);
+  font-size: 1.1rem;
+  line-height: 1.6;
+  z-index: 1;
+  margin: 0;
+}
+
+.button-group {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  z-index: 1;
+}
+
+.btn-voltar {
+  background-color: var(--color-surface-1);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.btn-voltar:hover {
+  background-color: var(--color-surface-2);
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+@keyframes shadow-scale {
+  0%,
+  100% {
+    transform: translateX(-50%) scale(1);
+    opacity: 0.2;
+  }
+  50% {
+    transform: translateX(-50%) scale(0.6);
+    opacity: 0.1;
+  }
+}
+
+@media (max-width: 480px) {
+  .button-group {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
