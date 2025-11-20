@@ -228,6 +228,7 @@ export const SearchPage = ({ initialQuery = "" }) => {
     filteredIdols.length > 0 ||
     filteredArtists.length > 0;
 
+  const showInitialState = !searchQuery && !loading;
   const showNoResults = searchQuery && !loading && !hasResults;
 
   return (
