@@ -11,6 +11,7 @@ const api = axios.create({
   },
 });
 
+// Interceptor: Adiciona o token em TODAS as requisições se existir
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("authToken");
@@ -24,6 +25,7 @@ api.interceptors.request.use(
 
 export const authAPI = {
   login: async (credentials) => {
+    // Mantendo a estrutura /api/auth/login
     const response = await api.post("/api/auth/login", credentials);
     return response.data;
   },
@@ -41,9 +43,7 @@ export const authAPI = {
 
 export const dashboardAPI = {
   getDashboardData: async (userId) => {
-    // CORREÇÃO 3: Proteção contra userId undefined
-    if (!userId || userId === "undefined") {
-      console.warn("Dashboard tentou carregar sem userId válido.");
+    if (!userId || userId === "undefined" || userId === "guest") {
       return null;
     }
     const response = await api.get(`/api/dashboard/${userId}`);
@@ -125,6 +125,10 @@ export const collectorsAPI = {
   getWishlist: async (userId) => {
     if (!userId) return [];
     const response = await api.get(`/api/collectors/wishlist/${userId}`);
+    return response.data;
+  },
+  addToWishlist: async (data) => {
+    const response = await api.post("/api/wishlist/add", data);
     return response.data;
   },
 

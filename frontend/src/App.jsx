@@ -10,8 +10,9 @@ import Dashboard from "./pages/Dashboard/Dashboard";
 import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
 import NotFound from "./pages/NotFound/NotFound";
+import { SearchPage } from "./pages/SearchPage/SearchPage"; // Ajuste o import se necessário
 
-// Componente de rota protegida
+// Wrapper para rotas protegidas
 const ProtectedRoute = ({ children, user }) => {
   if (!user) {
     return <Navigate to="/login" replace />;
@@ -19,60 +20,46 @@ const ProtectedRoute = ({ children, user }) => {
   return children;
 };
 
-// Componente principal de rotas
 const AppRoutes = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
-
   const navigate = useNavigate();
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        console.error("Erro ao parsear usuário", e);
+        localStorage.removeItem("user");
+      }
     }
     setLoading(false);
   }, []);
 
   const handleLogin = (userData) => {
     setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
-  };
-
-  const handleRegister = (userData) => {
-    setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
   };
 
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem("user");
+    localStorage.removeItem("authToken");
     navigate("/login");
   };
 
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [darkMode]);
-
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Carregando...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="loading-spinner"></div>
       </div>
     );
   }
 
-  const ProtectedDashboard = () => {
-    return <Dashboard onLogout={handleLogout} user={user} />;
-  };
+  const ProtectedDashboard = () => (
+    <Dashboard onLogout={handleLogout} user={user} />
+  );
 
   return (
     <Routes>
@@ -93,18 +80,17 @@ const AppRoutes = () => {
           user ? (
             <Navigate to="/dashboard" replace />
           ) : (
-            <Login onLogin={handleLogin} darkMode={darkMode} />
+            <Login onLogin={handleLogin} />
           )
         }
       />
-
       <Route
         path="/register"
         element={
           user ? (
             <Navigate to="/dashboard" replace />
           ) : (
-            <Register onRegister={handleRegister} darkMode={darkMode} />
+            <Register onRegister={handleLogin} />
           )
         }
       />
@@ -117,7 +103,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/searchpage"
         element={
@@ -126,7 +111,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/binders/*"
         element={
@@ -135,7 +119,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/payments"
         element={
@@ -144,7 +127,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/section/*"
         element={

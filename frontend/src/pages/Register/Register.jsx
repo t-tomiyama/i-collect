@@ -16,17 +16,6 @@ import {
 import { authAPI } from "../../services/api";
 import "../../App.css";
 
-const setCookie = (name, value, days) => {
-  let expires = "";
-  if (days) {
-    const date = new Date();
-    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-    expires = "; expires=" + date.toUTCString();
-  }
-  document.cookie =
-    name + "=" + (value || "") + expires + "; path=/; SameSite=Strict";
-};
-
 const PhotocardsBackground = () => {
   const HeartIcon = () => (
     <svg
@@ -76,6 +65,7 @@ const PhotocardsBackground = () => {
     </div>
   );
 };
+
 const Register = ({ onRegister }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [socialMedias, setSocialMedias] = useState([]);
@@ -84,7 +74,7 @@ const Register = ({ onRegister }) => {
 
   const [formData, setFormData] = useState({
     name: "",
-    username: "", // CORRIGIDO: era app_username
+    username: "",
     email: "",
     password: "",
     social_media_id: "",
@@ -93,20 +83,18 @@ const Register = ({ onRegister }) => {
 
   const navigate = useNavigate();
 
+  // Carrega as redes sociais ao abrir a página
   useEffect(() => {
     const loadSocials = async () => {
       try {
         const res = await authAPI.getSocialMedias();
         if (res.success) setSocialMedias(res.data);
-        else
-          setSocialMedias([
-            { id: 1, name: "Instagram" },
-            { id: 2, name: "Twitter" },
-          ]);
+        else throw new Error("Falha ao carregar redes");
       } catch (err) {
+        // Fallback caso a API falhe, para não quebrar a UI
         setSocialMedias([
           { id: 1, name: "Instagram" },
-          { id: 2, name: "Twitter" },
+          { id: 2, name: "Twitter/X" },
         ]);
       }
     };
@@ -121,7 +109,7 @@ const Register = ({ onRegister }) => {
   const handleSelectChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: parseInt(e.target.value, 10), // Converte "1" para 1
+      [e.target.name]: parseInt(e.target.value, 10),
     });
     setError("");
   };
@@ -131,14 +119,12 @@ const Register = ({ onRegister }) => {
     setError("");
     setLoading(true);
 
-    // Validação robusta no frontend
     if (!formData.social_media_id) {
       setError("Selecione uma rede social.");
       setLoading(false);
       return;
     }
 
-    // Preparar payload garantindo tipos corretos
     const payload = {
       name: formData.name.trim(),
       username: formData.username.trim(),
@@ -148,7 +134,6 @@ const Register = ({ onRegister }) => {
       social_media_handle: formData.social_media_handle.trim().replace("@", ""),
     };
 
-    // Validação final
     if (!payload.social_media_handle) {
       setError("O handle da rede social é obrigatório.");
       setLoading(false);
@@ -156,7 +141,6 @@ const Register = ({ onRegister }) => {
     }
 
     try {
-      console.log("Enviando payload:", payload);
       const response = await authAPI.register(payload);
 
       if (response.success) {
@@ -164,10 +148,9 @@ const Register = ({ onRegister }) => {
 
         localStorage.setItem("authToken", token);
         localStorage.setItem("user", JSON.stringify(user));
-        setCookie("authToken", token, 1);
 
         if (onRegister) {
-          onRegister(user, token);
+          onRegister(user);
         }
 
         navigate("/dashboard");
@@ -175,16 +158,10 @@ const Register = ({ onRegister }) => {
         setError(response.error || "Erro ao criar conta.");
       }
     } catch (err) {
-      console.error("Erro completo no registro:", err);
-
-      // Tratamento de erro aprimorado
-      if (err.response?.data) {
-        setError(err.response.data.error || "Erro no servidor.");
-      } else if (err.code === "ERR_NETWORK") {
-        setError("Erro de conexão. Verifique sua internet.");
-      } else {
-        setError("Erro inesperado. Tente novamente.");
-      }
+      console.error("Erro no registro:", err);
+      const msg =
+        err.response?.data?.error || "Erro ao conectar com o servidor.";
+      setError(msg);
     } finally {
       setLoading(false);
     }

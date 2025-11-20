@@ -10,20 +10,9 @@ import {
   AlertCircle,
 } from "lucide-react";
 import "../../App.css";
+import { authAPI } from "../../services/api"; // Importando a API configurada
 
-const API_URL = "https://i-collect-backend.onrender.com/api";
-
-const setCookie = (name, value, days) => {
-  let expires = "";
-  if (days) {
-    const date = new Date();
-    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-    expires = "; expires=" + date.toUTCString();
-  }
-  document.cookie =
-    name + "=" + (value || "") + expires + "; path=/; SameSite=Strict";
-};
-
+// Componente de Fundo Animado
 const PhotocardsBackground = () => {
   const HeartIcon = () => (
     <svg
@@ -87,61 +76,51 @@ const Login = ({ onLogin }) => {
     setError("");
   };
 
-  // FUNÇÃO PARA ACESSAR COMO VISITANTE
   const handleGuestAccess = () => {
-    // Cria um usuário fictício para a sessão
     const guestUser = {
       id: "guest",
       name: "Visitante",
       email: "guest@icollect.com",
-      isGuest: true, // Flag importante para controlar acesso no Dashboard
+      isGuest: true,
     };
 
-    // Salva no localStorage para persistir se der refresh
+    // Salva apenas o user mockado, sem token
     localStorage.setItem("user", JSON.stringify(guestUser));
+    localStorage.removeItem("authToken"); // Garante que não tem token antigo
 
-    // Chama a função de login do App.js
-    if (onLogin) {
-      onLogin(guestUser, null); // Token null
-    }
-
+    if (onLogin) onLogin(guestUser);
     navigate("/dashboard");
   };
 
+  // --- LOGIN REAL (COM TOKEN) ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
 
     try {
-      // Tenta conectar com o backend no Render
-      const response = await fetch(`${API_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
+      const data = await authAPI.login(formData);
 
       if (data.success) {
         const token = data.data.token;
-        const user = { ...data.data.user, isGuest: false }; // Garante que não é guest
+        const user = { ...data.data.user, isGuest: false };
 
-        const daysToExpire = rememberMe ? 7 : null;
-        setCookie("authToken", token, daysToExpire);
+        localStorage.setItem("authToken", token);
         localStorage.setItem("user", JSON.stringify(user));
 
         if (onLogin) {
-          onLogin(user, token);
+          onLogin(user);
         }
 
         navigate("/dashboard");
       } else {
-        setError(data.error || "Falha ao fazer login");
+        setError(data.message || data.error || "Falha ao fazer login");
       }
     } catch (err) {
-      console.error(err);
-      setError("Erro de conexão com o servidor. Tente novamente.");
+      console.error("Login error:", err);
+      const msg =
+        err.response?.data?.error || "Erro de conexão com o servidor.";
+      setError(msg);
     } finally {
       setIsLoading(false);
     }
