@@ -18,12 +18,15 @@ const FILTERS = [
   { id: "artists", name: "Artistas/Grupos", icon: Users },
 ];
 
-// --- COMPONENTE RELEASE CARD ---
-const ReleaseCard = ({ title, artist, coverUrl, cdUrl }) => {
+const ReleaseCard = ({ title, artist, coverUrl }) => {
   return (
     <div className="release-card">
       <div className="release-card__content">
-        {cdUrl && <img src={cdUrl} alt="CD" className="release-card__cd" />}
+        <img
+          src="https://i.postimg.cc/ZqhVJxg3/CD.png"
+          alt="CD"
+          className="release-card__cd"
+        />
         <img
           src={coverUrl}
           alt={`${title} cover`}
@@ -381,7 +384,6 @@ export const SearchPage = ({ initialQuery = "" }) => {
                 title={release.name}
                 artist={release.artist_name || "Artista"}
                 coverUrl={release.cover || "/default-album.jpg"}
-                cdUrl={null}
               />
             ))}
           </div>
