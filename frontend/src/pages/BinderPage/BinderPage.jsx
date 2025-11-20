@@ -179,29 +179,8 @@ const ALL_TYPES = [
 const BINDERS_DATA = [
   {
     id: 1,
-    title: "Coleção <br/> K-Pop",
+    title: "Minhaa coleção de cards",
     theme: "theme-pink",
-    rows: 3,
-    cols: 3,
-  },
-  {
-    id: 2,
-    title: "Cards <br/> de Anime",
-    theme: "theme-blue",
-    rows: 3,
-    cols: 3,
-  },
-  {
-    id: 3,
-    title: "Lista <br/> de Trocas",
-    theme: "theme-mint",
-    rows: 3,
-    cols: 3,
-  },
-  {
-    id: 4,
-    title: "Favoritos <br/> Pessoais",
-    theme: "theme-lavender",
     rows: 3,
     cols: 3,
   },
