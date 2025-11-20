@@ -95,7 +95,7 @@ export default function Footer({ darkMode, themeHex }) {
             reservados.
           </p>
           <div className="version-info">
-            <span>v1.5.0</span>
+            <span>v1.5.2</span>
           </div>
         </div>
       </div>

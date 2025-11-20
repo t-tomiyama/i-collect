@@ -371,7 +371,12 @@ export const SearchPage = ({ initialQuery = "" }) => {
               >
                 <div className="photocard-card__image-wrapper">
                   <img
-                    src={pc.front_image || pc.image_url || "/default-card.jpg"}
+                    src={
+                      pc.image ||
+                      pc.front_image ||
+                      pc.image_url ||
+                      "/default-card.jpg"
+                    }
                     alt={pc.name}
                     className="photocard-card__image"
                   />
