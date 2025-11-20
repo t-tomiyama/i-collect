@@ -6,17 +6,11 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
 
   server: {
-    proxy: {
-      "/api": {
-        target: "http://localhost:3000", // This only helps you locally
-        changeOrigin: true,
-      },
-    },
+    port: 5173,
   },
 
   build: {
     outDir: "dist",
     sourcemap: false,
   },
-  base: process.env.NODE_ENV === "production" ? "/" : "/",
 });
