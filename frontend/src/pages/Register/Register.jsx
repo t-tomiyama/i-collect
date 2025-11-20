@@ -9,16 +9,14 @@ import {
   Eye,
   EyeOff,
   AtSign,
-  Smartphone, // Ícone para rede social
-  Globe, // Ícone para o select
+  Smartphone,
+  Globe,
 } from "lucide-react";
 
 import "../../App.css";
 
-// ... (PhotocardsBackground mantém igual) ...
 const PhotocardsBackground = () => {
-  /* ... seu código do background ... */
-  return <div className="photocards-bg"></div>; // Simplificado aqui pra economizar espaço
+  return <div className="photocards-bg"></div>;
 };
 
 const Register = ({ onRegister }) => {
@@ -27,27 +25,23 @@ const Register = ({ onRegister }) => {
 
   const [formData, setFormData] = useState({
     name: "",
-    app_username: "", // Login no sistema
+    app_username: "",
     email: "",
     password: "",
-    social_media_id: "", // ID da rede selecionada (1, 2, 3...)
-    social_media_handle: "", // Nome do usuário na rede (ex: thais_linda)
+    social_media_id: "",
+    social_media_handle: "",
   });
 
   const navigate = useNavigate();
 
-  // Busca as redes sociais ao carregar a página
   useEffect(() => {
-    // OBS: Você precisa criar uma rota GET /api/social-medias no backend
-    // Se não tiver, vou simular aqui hardcoded para funcionar agora:
     const mockSocials = [
       { id: 1, name: "Instagram" },
-      { id: 2, name: "Twitter / X" },
+      { id: 2, name: "Twitter" },
       { id: 3, name: "TikTok" },
     ];
 
-    // Tente buscar do backend, se falhar use o mock
-    fetch("https://i-collect-backend.onrender.com/api/social-medias") // Ajuste a URL se necessário
+    fetch("https://i-collect-backend.onrender.com/api/social-medias")
       .then((res) => res.json())
       .then((data) => {
         if (data.success) setSocialMedias(data.data);
