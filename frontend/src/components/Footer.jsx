@@ -28,7 +28,6 @@ export default function Footer({ darkMode, themeHex }) {
     >
       <div className="footer-container">
         <div className="footer-content">
-          {/* Marca / Logo */}
           <div className="footer-brand">
             <div className="brand-logo-group">
               <div className="brand-icon-box">

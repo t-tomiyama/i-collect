@@ -1,0 +1,265 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-content {
+  background: white;
+  width: 100%;
+  max-width: 500px;
+  border-radius: 20px;
+  padding: 2rem;
+  position: relative;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+}
+
+.modal-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.modal-image-container {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.modal-main-image {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.modal-sub-image {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 12px;
+  opacity: 0.8;
+}
+
+.modal-title-section h2 {
+  font-size: 1.5rem;
+  color: #333;
+  margin: 0.5rem 0 0.2rem 0;
+}
+
+.modal-title-section h3 {
+  font-size: 1rem;
+  color: #666;
+  font-weight: normal;
+}
+
+.modal-chip {
+  background: #e0e7ff;
+  color: #4f46e5;
+  padding: 0.25rem 0.75rem;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+.info-grid {
+  display: grid;
+  gap: 1rem;
+  background: #f9fafb;
+  padding: 1.5rem;
+  border-radius: 12px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #4b5563;
+  font-size: 0.95rem;
+}
+
+.mbti-badge {
+  background: #fef3c7;
+  color: #d97706;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+/* === SEÇÕES EXTRAS (Membros, Preview Horizontal) === */
+
+.members-section,
+.related-section {
+  margin-top: 1.5rem;
+  border-top: 1px solid #eee;
+  padding-top: 1rem;
+}
+
+.members-section h4,
+.related-section h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #333;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: bold;
+}
+
+/* GRID MEMBROS */
+.mini-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1rem;
+}
+
+.mini-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #f9fafb;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  transition: transform 0.2s;
+}
+
+.mini-card img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.mini-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.mini-info strong {
+  font-size: 0.85rem;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mini-info span {
+  font-size: 0.75rem;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* SCROLL HORIZONTAL (PHOTOCARDS RELACIONADOS) */
+.horizontal-scroll-list {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  scrollbar-width: thin;
+}
+
+.horizontal-scroll-list::-webkit-scrollbar {
+  height: 6px;
+}
+.horizontal-scroll-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+.horizontal-scroll-list::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+.preview-card {
+  flex: 0 0 auto;
+  width: 70px;
+  height: 100px;
+  cursor: pointer;
+  transition: transform 0.2s;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #eee;
+}
+
+.preview-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.preview-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.modal-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #666;
+  gap: 1rem;
+}
+
+.spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #4f46e5;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

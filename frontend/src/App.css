@@ -1491,7 +1491,6 @@ button {
   color: var(--theme-active-dark-text);
 }
 .brand-title {
-  font-family: "Coolvetica", sans-serif;
   font-weight: 700;
   font-size: 1.5rem;
   line-height: 1;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Search, Music, Users, Package, User, X } from "lucide-react";
+import DetailsModal from "../components/DetailsModal"; // Ajuste o caminho conforme sua estrutura
 
 import "./SearchPage.css";
 
@@ -18,9 +19,14 @@ const FILTERS = [
   { id: "artists", name: "Artistas/Grupos", icon: Users },
 ];
 
-const ReleaseCard = ({ title, artist, coverUrl }) => {
+// Componente interno ReleaseCard atualizado para receber onClick
+const ReleaseCard = ({ title, artist, coverUrl, onClick }) => {
   return (
-    <div className="release-card">
+    <div
+      className="release-card"
+      onClick={onClick}
+      style={{ cursor: "pointer" }}
+    >
       <div className="release-card__content">
         <img
           src="https://i.postimg.cc/ZqhVJxg3/CD.png"
@@ -47,10 +53,17 @@ export const SearchPage = ({ initialQuery = "" }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Estados de Dados
   const [photocards, setPhotocards] = useState([]);
   const [releases, setReleases] = useState([]);
   const [idols, setIdols] = useState([]);
   const [artists, setArtists] = useState([]);
+
+  // Estados do Modal
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalType, setModalType] = useState("");
+  const [modalData, setModalData] = useState(null);
+  const [modalLoading, setModalLoading] = useState(false);
 
   useEffect(() => {
     if (initialQuery) {
@@ -72,12 +85,38 @@ export const SearchPage = ({ initialQuery = "" }) => {
     }
   }, [searchQuery]);
 
+  // --- FUNÇÃO PARA ABRIR O MODAL ---
+  const handleCardClick = async (type, id) => {
+    // Se o modal já estiver aberto (navegação interna), mostra loading
+    if (modalOpen) setModalLoading(true);
+    else setModalOpen(true);
+
+    setModalType(type);
+    setModalData(null); // Limpa dados anteriores
+
+    // Garante loading visual se abriu agora
+    if (!modalOpen) setModalLoading(true);
+
+    try {
+      const res = await fetch(`${API_URL}/search/details/${type}/${id}`);
+      const json = await res.json();
+      if (json.success) {
+        setModalData(json.data);
+      } else {
+        console.error("Erro na resposta da API:", json);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar detalhes:", error);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
   const fetchInitialData = async () => {
     setLoading(true);
     setError("");
 
     try {
-      // Buscar dados iniciais das tabelas existentes
       const [photocardsRes, releasesRes, idolsRes, artistsRes] =
         await Promise.all([
           fetch(`${API_URL}/search/photocards?limit=12`).then((res) =>
@@ -233,6 +272,16 @@ export const SearchPage = ({ initialQuery = "" }) => {
 
   return (
     <div className="search-page-container">
+      {/* --- MODAL INSERIDO AQUI --- */}
+      <DetailsModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        type={modalType}
+        data={modalData}
+        loading={modalLoading}
+        onRelatedClick={handleCardClick}
+      />
+
       <div className="search-bar-wrapper">
         <Search className="search-bar__icon" size={20} />
         <input
@@ -317,12 +366,33 @@ export const SearchPage = ({ initialQuery = "" }) => {
         </div>
       )}
 
+      {showInitialState && (
+        <div
+          style={{
+            textAlign: "center",
+            padding: "3rem",
+            color: "var(--color-text-muted)",
+          }}
+        >
+          <Search size={48} style={{ marginBottom: "1rem", opacity: 0.5 }} />
+          <h3>Comece a pesquisar</h3>
+          <p>
+            Digite termos como nome de artistas, álbuns, idols ou photocards
+          </p>
+        </div>
+      )}
+
       {!loading && filteredPhotocards.length > 0 && (
         <div className="search-section">
           <h2 className="search-section__title">Photocards</h2>
           <div className="photocard-grid">
             {filteredPhotocards.map((pc) => (
-              <div key={pc.id} className="photocard-card">
+              <div
+                key={pc.id}
+                className="photocard-card"
+                onClick={() => handleCardClick("photocards", pc.id)}
+                style={{ cursor: "pointer" }}
+              >
                 <div className="photocard-card__image-wrapper">
                   <img
                     src={pc.front_image || pc.image_url || "/default-card.jpg"}
@@ -368,6 +438,7 @@ export const SearchPage = ({ initialQuery = "" }) => {
                 title={release.name}
                 artist={release.artist_name || "Artista"}
                 coverUrl={release.cover || "/default-album.jpg"}
+                onClick={() => handleCardClick("releases", release.id)}
               />
             ))}
           </div>
@@ -379,7 +450,12 @@ export const SearchPage = ({ initialQuery = "" }) => {
           <h2 className="search-section__title">Idols</h2>
           <div className="idol-grid">
             {filteredIdols.map((idol) => (
-              <div key={idol.id} className="idol-card">
+              <div
+                key={idol.id}
+                className="idol-card"
+                onClick={() => handleCardClick("idols", idol.id)}
+                style={{ cursor: "pointer" }}
+              >
                 <img
                   src={idol.image || "/default-idol.jpg"}
                   alt={idol.stage_name}
@@ -400,7 +476,12 @@ export const SearchPage = ({ initialQuery = "" }) => {
           <h2 className="search-section__title">Artistas/Grupos</h2>
           <div className="artist-grid">
             {filteredArtists.map((artist) => (
-              <div key={artist.id} className="artist-card">
+              <div
+                key={artist.id}
+                className="artist-card"
+                onClick={() => handleCardClick("artists", artist.id)}
+                style={{ cursor: "pointer" }}
+              >
                 <img
                   src={artist.image || "/default-artist.jpg"}
                   alt={artist.name}
