@@ -85,21 +85,32 @@ const Register = ({ onRegister }) => {
     setError("");
     setLoading(true);
 
-    // Validação extra antes de enviar
+    // Validação robusta no frontend
     if (!formData.social_media_id) {
       setError("Selecione uma rede social.");
       setLoading(false);
       return;
     }
 
-    // Prepara os dados garantindo que o ID é número
+    // Preparar payload garantindo tipos corretos
     const payload = {
-      ...formData,
+      name: formData.name.trim(),
+      username: formData.username.trim(),
+      email: formData.email.trim().toLowerCase(),
+      password: formData.password,
       social_media_id: Number(formData.social_media_id),
+      social_media_handle: formData.social_media_handle.trim().replace("@", ""),
     };
 
+    // Validação final
+    if (!payload.social_media_handle) {
+      setError("O handle da rede social é obrigatório.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      console.log("Enviando payload:", payload); // Para debug
+      console.log("Enviando payload:", payload);
       const response = await authAPI.register(payload);
 
       if (response.success) {
@@ -118,18 +129,15 @@ const Register = ({ onRegister }) => {
         setError(response.error || "Erro ao criar conta.");
       }
     } catch (err) {
-      console.error("Erro no registro:", err);
+      console.error("Erro completo no registro:", err);
 
       // Tratamento de erro aprimorado
-      if (err.response && err.response.data) {
-        // Se o backend mandou { success: false, error: "..." }
-        if (err.response.data.error) {
-          setError(err.response.data.error);
-        } else {
-          setError("Erro desconhecido no servidor (400).");
-        }
-      } else {
+      if (err.response?.data) {
+        setError(err.response.data.error || "Erro no servidor.");
+      } else if (err.code === "ERR_NETWORK") {
         setError("Erro de conexão. Verifique sua internet.");
+      } else {
+        setError("Erro inesperado. Tente novamente.");
       }
     } finally {
       setLoading(false);
