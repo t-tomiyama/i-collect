@@ -1398,7 +1398,7 @@ button {
 }
 
 .brand-icon-svg {
-  color: var(--theme-text); /* Ícone na cor do tema */
+  color: var(--theme-text);
   display: block;
 }
 .dark .brand-icon-svg {
@@ -1406,7 +1406,6 @@ button {
 }
 
 .brand-title {
-  font-family: "Coolvetica", sans-serif;
   font-weight: 700;
   font-size: 1.5rem;
   line-height: 1;
@@ -1417,7 +1416,7 @@ button {
 }
 
 .brand-title span {
-  color: var(--theme-text); /* "Collect" na cor do tema */
+  color: var(--theme-text);
 }
 .dark .brand-title span {
   color: var(--theme-active-dark-text);
