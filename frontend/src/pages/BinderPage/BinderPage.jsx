@@ -112,8 +112,8 @@ const MOCK_SEARCH_CARDS = [
   {
     id: 100,
     group: "Stray Kids",
-    idol: "Hyunjin",
-    name: "Oddinary Lenticular",
+    idol: "Lee Know",
+    name: "Levanter - Limited - Lenticular",
     type: "lenticular-card",
     img1: "https://i.pinimg.com/1200x/82/8c/2e/828c2e0ede20f8e99c1c33b2dc25085d.jpg",
     img2: "https://i.pinimg.com/736x/d0/18/f9/d018f957f6cf4c2f700fcaeef70f39b3.jpg",
@@ -124,9 +124,9 @@ const MOCK_SEARCH_CARDS = [
   },
   {
     id: 101,
-    group: "Twice",
-    idol: "Mina",
-    name: "Taste of Love POB",
+    group: "(G)I-DLE",
+    idol: "Minnie",
+    name: "Minnie - POB Makestar - I SWAY",
     type: "glossy-card",
     img1: "https://i.pinimg.com/736x/13/b9/72/13b9728245ced939356886aa5a900755.jpg",
     backImg:
@@ -147,8 +147,8 @@ const MOCK_SEARCH_CARDS = [
   {
     id: 103,
     group: "Stray Kids",
-    idol: "Felix",
-    name: "MAXIDENT Holo",
+    idol: "Lee Know, Han",
+    name: "Minsung Holo 2 Kids Room",
     type: "holographic-star",
     img1: "https://i.pinimg.com/736x/9d/c3/a1/9dc3a1d892d9cab0b0fb5b4b5b05a8a2.jpg",
     sleeveColor: "#FFECB3",
@@ -156,9 +156,9 @@ const MOCK_SEARCH_CARDS = [
   },
   {
     id: 104,
-    group: "Twice",
-    idol: "Sana",
-    name: "Ready to Be Crystal",
+    group: "Zerobaseone",
+    idol: "Sung Hanbin, Zhang Hao",
+    name: "Unit Haobin - Yura Yura",
     type: "holographic-crystal",
     img1: "https://i.pinimg.com/736x/c9/1c/19/c91c1995369f7c21b728402b24eba2af.jpg",
     sleeveColor: "#E0BBE4",
@@ -179,7 +179,7 @@ const ALL_TYPES = [
 const BINDERS_DATA = [
   {
     id: 1,
-    title: "Minhaa coleção de cards",
+    title: "Minha coleção de cards",
     theme: "theme-pink",
     rows: 3,
     cols: 3,
@@ -954,9 +954,7 @@ export function BinderPage() {
             <button id="info-box-close" onClick={() => setIsModalOpen(false)}>
               &times;
             </button>
-            <h2 className="modal-title">
-              Inspeção do Card: **{selectedCard.name || "Sem Nome"}**
-            </h2>
+            <h2 className="modal-title">{selectedCard.name || "Photocard"}</h2>
             <div className="modal-card-scene">
               <div
                 className={`modal-card-inner ${
