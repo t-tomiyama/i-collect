@@ -47,14 +47,39 @@ const MOCK_GUEST_DATA = {
         "https://i.pinimg.com/736x/59/f8/0d/59f80d212b56d7b7efab33118606f35d.jpg",
       amount: 45.0,
       seller_name: "lovejurin",
-      due_date: new Date().toISOString(),
+      due_date: new Date().toISOString(), // Vence hoje
       status: "vence hoje",
       payment_type: "Item + Frete",
       ceg_name: "CEG XG",
       late_fee: 0,
     },
+    {
+      id: "guest-2",
+      photocard_name: "Chisa - AWE POB",
+      photocard_image:
+        "https://i.pinimg.com/736x/1a/ce/56/1ace56135e1c1d76149ab35f0bcce8c5.jpg",
+      amount: 120.0,
+      seller_name: "lovejurin",
+      due_date: new Date(Date.now() + 86400000 * 2).toISOString(), // +2 dias
+      status: "pendente",
+      payment_type: "Item",
+      ceg_name: "CEG XG Mascara",
+      late_fee: 0,
+    },
+    {
+      id: "guest-3",
+      photocard_name: "Maya - AWE",
+      photocard_image:
+        "https://i.pinimg.com/736x/9a/45/f4/9a45f486eca3c11f9a2fe4a40fd85690.jpg",
+      amount: 55.5,
+      seller_name: "alphaztore",
+      due_date: new Date(Date.now() - 86400000).toISOString(), // -1 dia (atrasado)
+      status: "atrasado",
+      payment_type: "Frete Nacional",
+      ceg_name: "Envios da Maya",
+      late_fee: 2.5,
+    },
   ],
-  recentActivity: [],
 };
 
 const THEMES = {
