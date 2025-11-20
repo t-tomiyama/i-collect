@@ -82,7 +82,8 @@ export const NAV_ITEMS = [
   { type: "link", icon: Settings, label: "Configurações", id: "settings" },
 ];
 
-const GUEST_IDS = ["home", "catalog", "community"];
+// IDs permitidos para visitantes (Top Level)
+const GUEST_ALLOWED_IDS = ["home", "catalog", "collection"];
 
 export const Sidebar = ({
   user,
@@ -94,9 +95,22 @@ export const Sidebar = ({
   toggleCategory,
   onLogout,
 }) => {
+  // Lógica de filtro para visitantes
   const navItemsToDisplay = user
     ? NAV_ITEMS
-    : NAV_ITEMS.filter((item) => GUEST_IDS.includes(item.id));
+    : NAV_ITEMS.filter((item) => GUEST_ALLOWED_IDS.includes(item.id)).map(
+        (item) => {
+          // Regra específica: Se for "Minha Coleção", mostra apenas "Meus Binders"
+          if (item.id === "collection") {
+            return {
+              ...item,
+              items: item.items.filter((sub) => sub.id === "my-binders"),
+            };
+          }
+          // Para "Catálogo" e "Home", retorna como está
+          return item;
+        }
+      );
 
   useEffect(() => {
     const activeCategory = NAV_ITEMS.find(
@@ -224,7 +238,7 @@ export const Sidebar = ({
           );
         })}
 
-        {user && (
+        {user && !user.isGuest && (
           <div className="sidebar__logout-group">
             <div className="nav-item-tooltip-wrapper">
               <button
@@ -233,6 +247,22 @@ export const Sidebar = ({
               >
                 <LogOut size={22} className="nav-link-icon" />
                 <span className="nav-link-label">Sair</span>
+              </button>
+
+              {!sidebarOpen && <div className="nav-item-tooltip">Sair</div>}
+            </div>
+          </div>
+        )}
+
+        {user && user.isGuest && (
+          <div className="sidebar__logout-group">
+            <div className="nav-item-tooltip-wrapper">
+              <button
+                className="nav-link sidebar__logout-button"
+                onClick={onLogout}
+              >
+                <LogOut size={22} className="nav-link-icon" />
+                <span className="nav-link-label">Sair do Modo Visitante</span>
               </button>
 
               {!sidebarOpen && <div className="nav-item-tooltip">Sair</div>}
