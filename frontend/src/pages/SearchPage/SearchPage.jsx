@@ -367,110 +367,33 @@ export const SearchPage = ({ initialQuery = "" }) => {
                 key={pc.id}
                 className="photocard-card"
                 onClick={() => handleCardClick("photocards", pc.id)}
-                style={{
-                  cursor: "pointer",
-                  display: "flex",
-                  flexDirection: "column",
-                  height: "100%",
-                }}
+                style={{ cursor: "pointer" }}
               >
                 <div className="photocard-card__image-wrapper">
                   <img
-                    src={pc.front_image || "/default-card.jpg"}
+                    src={pc.front_image || pc.image_url || "/default-card.jpg"}
                     alt={pc.name}
                     className="photocard-card__image"
-                    style={{
-                      objectFit: "cover",
-                      width: "100%",
-                      height: "auto",
-                      aspectRatio: "5.5/8.5",
-                    }}
                   />
                 </div>
-
-                <div
-                  className="photocard-card__info"
-                  style={{
-                    padding: "0.75rem",
-                    display: "flex",
-                    flexDirection: "column",
-                    flexGrow: 1,
-                    gap: "0.25rem",
-                  }}
-                >
-                  <div className="photocard-header">
-                    <span
-                      className="photocard-card__name"
-                      style={{
-                        display: "block",
-                        fontSize: "1.1rem",
-                        fontWeight: "700",
-                        color: "#1f2937",
-                        lineHeight: "1.2",
-                      }}
-                    >
-                      {pc.stage_name || pc.name}
+                <div className="photocard-card__info">
+                  <span className="photocard-card__name">
+                    {pc.stage_name || pc.name}
+                  </span>
+                  {pc.artist_name && (
+                    <span className="photocard-card__group">
+                      {pc.artist_name}
                     </span>
-
-                    {pc.artist_name && (
+                  )}
+                  {pc.front_finish && (
+                    <div className="photocard-tooltip-wrapper">
                       <span
-                        className="photocard-card__group"
-                        style={{
-                          display: "block",
-                          fontSize: "0.85rem",
-                          color: "#6b7280",
-                          fontWeight: "500",
-                        }}
-                      >
-                        {pc.artist_name}
-                      </span>
-                    )}
-                  </div>
-
-                  <div
-                    className="photocard-badges"
-                    style={{
-                      marginTop: "auto",
-                      paddingTop: "0.75rem",
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: "0.4rem",
-                    }}
-                  >
-                    {(pc.set_type || pc.type) && (
-                      <span
-                        style={{
-                          backgroundColor: "#e0f2fe", // Azul claro para diferenciar
-                          color: "#0369a1",
-                          fontSize: "0.65rem",
-                          padding: "0.15rem 0.5rem",
-                          borderRadius: "4px",
-                          fontWeight: "600",
-                          textTransform: "uppercase",
-                          border: "1px solid #bae6fd",
-                        }}
-                      >
-                        {pc.set_type || pc.type}
-                      </span>
-                    )}
-
-                    {pc.front_finish && (
-                      <span
-                        style={{
-                          backgroundColor: "#f3f4f6",
-                          color: "#374151",
-                          fontSize: "0.65rem",
-                          padding: "0.15rem 0.5rem",
-                          borderRadius: "4px",
-                          border: "1px solid #e5e7eb",
-                          fontWeight: "600",
-                          textTransform: "uppercase",
-                        }}
+                        className={`photocard-card__type-badge type-${pc.front_finish.toLowerCase()}`}
                       >
                         {pc.front_finish}
                       </span>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
