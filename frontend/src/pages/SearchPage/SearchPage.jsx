@@ -361,22 +361,6 @@ export const SearchPage = ({ initialQuery = "" }) => {
         </div>
       )}
 
-      {showInitialState && (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "3rem",
-            color: "var(--color-text-muted)",
-          }}
-        >
-          <Search size={48} style={{ marginBottom: "1rem", opacity: 0.5 }} />
-          <h3>Comece a pesquisar</h3>
-          <p>
-            Digite termos como nome de artistas, álbuns, idols ou photocards
-          </p>
-        </div>
-      )}
-
       {!loading && filteredPhotocards.length > 0 && (
         <div className="search-section">
           <h2 className="search-section__title">Photocards</h2>
