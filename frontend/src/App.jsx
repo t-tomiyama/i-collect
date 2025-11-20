@@ -10,10 +10,10 @@ import Dashboard from "./pages/Dashboard/Dashboard";
 import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
 import NotFound from "./pages/NotFound/NotFound";
-import { SearchPage } from "./pages/SearchPage/SearchPage"; // Ajuste o import se necessário
+import { SearchPage } from "./pages/SearchPage/SearchPage";
 
-// Wrapper para rotas protegidas
 const ProtectedRoute = ({ children, user }) => {
+  // Se não tem usuário, vai pro login
   if (!user) {
     return <Navigate to="/login" replace />;
   }
@@ -61,12 +61,14 @@ const AppRoutes = () => {
     <Dashboard onLogout={handleLogout} user={user} />
   );
 
+  const isRealUser = user && !user.isGuest;
+
   return (
     <Routes>
       <Route
         path="/"
         element={
-          user ? (
+          isRealUser ? (
             <Navigate to="/dashboard" replace />
           ) : (
             <Navigate to="/login" replace />
@@ -77,17 +79,18 @@ const AppRoutes = () => {
       <Route
         path="/login"
         element={
-          user ? (
+          isRealUser ? (
             <Navigate to="/dashboard" replace />
           ) : (
             <Login onLogin={handleLogin} />
           )
         }
       />
+
       <Route
         path="/register"
         element={
-          user ? (
+          isRealUser ? (
             <Navigate to="/dashboard" replace />
           ) : (
             <Register onRegister={handleLogin} />
