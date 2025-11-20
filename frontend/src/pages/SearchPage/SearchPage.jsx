@@ -38,14 +38,12 @@ const ReleaseCard = ({ title, artist, coverUrl, cdUrl }) => {
   );
 };
 
-// --- COMPONENTE SEARCH PAGE ---
 export const SearchPage = ({ initialQuery = "" }) => {
   const [activeFilters, setActiveFilters] = useState(new Set());
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Estados para dados do banco
   const [photocards, setPhotocards] = useState([]);
   const [releases, setReleases] = useState([]);
   const [idols, setIdols] = useState([]);
