@@ -2,7 +2,6 @@ import React from "react";
 import { BookHeart, Heart } from "lucide-react";
 
 export default function Footer({ darkMode, themeHex }) {
-  // Se não vier cor, usa o rosa padrão
   const accentColor = themeHex || "#ec4899";
 
   const SocialIcons = {
@@ -25,7 +24,6 @@ export default function Footer({ darkMode, themeHex }) {
   return (
     <footer
       className={`app-footer ${darkMode ? "dark" : ""}`}
-      // A variável --theme-color é injetada aqui e usada no CSS
       style={{ "--theme-color": accentColor }}
     >
       <div className="footer-container">
@@ -47,13 +45,13 @@ export default function Footer({ darkMode, themeHex }) {
             </p>
 
             <div className="social-links">
-              <button className="social-btn">
-                <SocialIcons.Github width="20" height="20" />
-              </button>
+              <a href="https://github.com/t-tomiyama/i-collect">
+                <button className="social-btn">
+                  <SocialIcons.Github width="20" height="20" />
+                </button>
+              </a>
             </div>
           </div>
-
-          {/* Links */}
           <div className="footer-links-grid">
             <div className="footer-column">
               <span className="column-title">Plataforma</span>
