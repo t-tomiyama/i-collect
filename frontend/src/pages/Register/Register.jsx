@@ -83,7 +83,6 @@ const Register = ({ onRegister }) => {
 
   const navigate = useNavigate();
 
-  // Carrega as redes sociais ao abrir a página
   useEffect(() => {
     const loadSocials = async () => {
       try {
@@ -91,7 +90,6 @@ const Register = ({ onRegister }) => {
         if (res.success) setSocialMedias(res.data);
         else throw new Error("Falha ao carregar redes");
       } catch (err) {
-        // Fallback caso a API falhe, para não quebrar a UI
         setSocialMedias([
           { id: 1, name: "Instagram" },
           { id: 2, name: "Twitter/X" },
@@ -119,12 +117,14 @@ const Register = ({ onRegister }) => {
     setError("");
     setLoading(true);
 
+    // Validação básica
     if (!formData.social_media_id) {
       setError("Selecione uma rede social.");
       setLoading(false);
       return;
     }
 
+    // Preparar payload garantindo tipos corretos para o Backend
     const payload = {
       name: formData.name.trim(),
       username: formData.username.trim(),
