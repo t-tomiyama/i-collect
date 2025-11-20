@@ -16,7 +16,7 @@ import {
 import { authAPI } from "../../services/api";
 import "../../App.css";
 
-// Função auxiliar para Cookies (igual a do Login)
+// Função auxiliar para Cookies
 const setCookie = (name, value, days) => {
   let expires = "";
   if (days) {
@@ -38,7 +38,7 @@ const Register = ({ onRegister }) => {
 
   const [formData, setFormData] = useState({
     name: "",
-    app_username: "",
+    username: "", // CORRIGIDO: era app_username
     email: "",
     password: "",
     social_media_id: "",
@@ -84,12 +84,12 @@ const Register = ({ onRegister }) => {
       if (response.success) {
         const { token, user } = response.data;
 
-        // 2. SALVAR SESSÃO (A Correção Principal)
+        // 2. SALVAR SESSÃO
         localStorage.setItem("authToken", token);
         localStorage.setItem("user", JSON.stringify(user));
-        setCookie("authToken", token, 1); // Salva cookie por 1 dia
+        setCookie("authToken", token, 1);
 
-        // 3. Atualiza estado global se necessário
+        // 3. Atualiza estado global
         if (onRegister) {
           onRegister(user, token);
         }
@@ -97,11 +97,19 @@ const Register = ({ onRegister }) => {
         // 4. Navega para o Dashboard
         navigate("/dashboard");
       } else {
+        // Caso o sucesso seja false (mas status 200 - raro na sua config atual)
         setError(response.error || "Erro ao criar conta.");
       }
     } catch (err) {
-      console.error("Erro registro:", err);
-      setError("Erro de conexão. Tente novamente.");
+      console.error("Erro detalhado:", err.response);
+
+      // MELHORIA NO TRATAMENTO DE ERRO
+      if (err.response && err.response.data && err.response.data.error) {
+        // Mostra o erro que veio do Backend (ex: "Email já cadastrado")
+        setError(err.response.data.error);
+      } else {
+        setError("Erro de conexão. Tente novamente.");
+      }
     } finally {
       setLoading(false);
     }
@@ -121,7 +129,6 @@ const Register = ({ onRegister }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="login-form">
-          {/* Mensagem de Erro Visual */}
           {error && (
             <div
               style={{
@@ -146,7 +153,7 @@ const Register = ({ onRegister }) => {
               <input
                 type="text"
                 name="name"
-                placeholder="Nome Completo"
+                placeholder="Nome"
                 className="form-input"
                 value={formData.name}
                 onChange={handleChange}
@@ -160,15 +167,15 @@ const Register = ({ onRegister }) => {
             <div className="input-group">
               <input
                 type="text"
-                name="app_username"
-                placeholder="Usuário para Login (Sistema)"
+                name="username"
+                placeholder="Username"
                 className="form-input"
-                value={formData.app_username}
+                value={formData.username}
                 onChange={handleChange}
                 required
               />
               <span className="input-icon">
-                <Lock size={20} />
+                <AtSign size={20} />
               </span>
             </div>
 
