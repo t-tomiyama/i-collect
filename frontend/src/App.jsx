@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
+  HashRouter,
   Routes,
   Route,
   Navigate,
@@ -11,7 +12,6 @@ import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
 import NotFound from "./pages/NotFound/NotFound";
 
-// Componente de rota protegida
 const ProtectedRoute = ({ children, user }) => {
   if (!user) {
     return <Navigate to="/login" replace />;
@@ -19,7 +19,6 @@ const ProtectedRoute = ({ children, user }) => {
   return children;
 };
 
-// Componente principal de rotas
 const AppRoutes = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -70,7 +69,6 @@ const AppRoutes = () => {
     );
   }
 
-  // Componente Dashboard protegido
   const ProtectedDashboard = () => {
     return <Dashboard onLogout={handleLogout} user={user} />;
   };
@@ -160,8 +158,19 @@ const AppRoutes = () => {
   );
 };
 
-// Componente App principal
+// Versão com fallback para HashRouter
 function App() {
+  // Verifica se está em produção no Vercel
+  const isProduction = process.env.NODE_ENV === "production";
+
+  if (isProduction) {
+    return (
+      <HashRouter>
+        <AppRoutes />
+      </HashRouter>
+    );
+  }
+
   return (
     <Router>
       <AppRoutes />
