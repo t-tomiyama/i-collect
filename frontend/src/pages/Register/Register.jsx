@@ -16,7 +16,6 @@ import {
 import { authAPI } from "../../services/api";
 import "../../App.css";
 
-// Função auxiliar para Cookies
 const setCookie = (name, value, days) => {
   let expires = "";
   if (days) {
@@ -28,8 +27,55 @@ const setCookie = (name, value, days) => {
     name + "=" + (value || "") + expires + "; path=/; SameSite=Strict";
 };
 
-const PhotocardsBackground = () => <div className="photocards-bg"></div>;
+const PhotocardsBackground = () => {
+  const HeartIcon = () => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      stroke="none"
+    >
+      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+    </svg>
+  );
 
+  return (
+    <div className="photocards-bg">
+      <div className="photocard card-1">
+        <div className="card-inner bg-pink">
+          <HeartIcon />
+        </div>
+      </div>
+      <div className="photocard card-2">
+        <div className="card-inner bg-blue">
+          <HeartIcon />
+        </div>
+      </div>
+      <div className="photocard card-3">
+        <div className="card-inner bg-purple">
+          <HeartIcon />
+        </div>
+      </div>
+      <div className="photocard card-4">
+        <div className="card-inner bg-yellow">
+          <HeartIcon />
+        </div>
+      </div>
+      <div className="photocard card-5">
+        <div className="card-inner bg-green-pastel">
+          <HeartIcon />
+        </div>
+      </div>
+      <div className="photocard card-6">
+        <div className="card-inner bg-pink-pastel">
+          <HeartIcon />
+        </div>
+      </div>
+    </div>
+  );
+};
 const Register = ({ onRegister }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [socialMedias, setSocialMedias] = useState([]);
@@ -146,11 +192,9 @@ const Register = ({ onRegister }) => {
 
   return (
     <div className="app-container">
-      {/* ... (PhotocardsBackground e Header do Card mantidos) ... */}
       <PhotocardsBackground />
       <div className="login-card theme-lavender">
         <div className="login-header">
-          {/* ... ícone e titulo ... */}
           <div className="icon-wrapper">
             <BookHeart size={32} strokeWidth={2} />
           </div>
@@ -179,7 +223,6 @@ const Register = ({ onRegister }) => {
           )}
 
           <div className="form-inputs">
-            {/* ... Inputs de Texto (Name, Username, Email, Password) usam handleChange ... */}
             <div className="input-group">
               <input
                 type="text"
@@ -258,13 +301,12 @@ const Register = ({ onRegister }) => {
               Dados do Coletor:
             </p>
 
-            {/* SELECT DA REDE SOCIAL - Usa handleSelectChange ou o handleChange modificado */}
             <div className="input-group">
               <select
                 name="social_media_id"
                 className="form-input"
                 value={formData.social_media_id}
-                onChange={handleSelectChange} // AQUI: Use a função que converte para Int
+                onChange={handleSelectChange}
                 required
                 style={{ appearance: "none" }}
               >
@@ -308,7 +350,7 @@ const Register = ({ onRegister }) => {
             {!loading && <ArrowRight size={20} strokeWidth={2.5} />}
           </button>
         </form>
-        {/* ... Footer de login ... */}
+
         <p className="signup-text">
           Já tem conta?{" "}
           <a
