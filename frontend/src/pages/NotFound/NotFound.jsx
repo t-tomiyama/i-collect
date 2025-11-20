@@ -5,11 +5,10 @@ import "./NotFound.css";
 
 const NotFound = () => {
   const navigate = useNavigate();
-  const [themeClass, setThemeClass] = useState("theme-pink"); // Tema padrão
+  const [themeClass, setThemeClass] = useState("theme-lavender");
 
   useEffect(() => {
-    // Tenta recuperar o tema salvo, senão usa 'pink'
-    const storedTheme = localStorage.getItem("i-collect-theme") || "pink";
+    const storedTheme = localStorage.getItem("i-collect-theme") || "lavender";
     setThemeClass(`theme-${storedTheme}`);
   }, []);
 
@@ -25,7 +24,7 @@ const NotFound = () => {
   return (
     <div className={`not-found-container ${themeClass}`}>
       <div className="not-found-content">
-        <div className="not-found-icon-wrapper">
+        <div className="not-found-icon-wrapper-404 ">
           <Ghost size={80} className="floating-ghost" />
           <span className="ghost-shadow"></span>
         </div>

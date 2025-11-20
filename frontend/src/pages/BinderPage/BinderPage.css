@@ -1191,7 +1191,7 @@ body.labeled-mode-active .status-icon-container {
   left: auto;
   transform: none;
   width: 500px;
-  background: #fff;
+  background: var(--color-surface-1);
   padding: 0;
   border-radius: 16px;
   z-index: 1000;
@@ -1305,7 +1305,7 @@ body.labeled-mode-active .status-icon-container {
   display: flex;
   align-items: center;
   gap: 5px;
-  background-color: #fff;
+  background-color: var(--color-surface-2);
   border: 1px solid var(--color-border);
   padding: 8px 16px;
   border-radius: 20px;

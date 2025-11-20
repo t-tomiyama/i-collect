@@ -24,11 +24,14 @@ import { Header } from "../../components/Header";
 import { SearchPage } from "../SearchPage/SearchPage";
 import { BinderPage } from "../BinderPage/BinderPage";
 import Payments from "../Payments/Payments";
+import DetailsModal from "../../components/DetailsModal/DetailsModal"; // Ajuste o caminho se necessário
 import "../SearchPage/SearchPage.css";
 import Footer from "../../components/Footer";
 
-import { dashboardAPI, paymentsAPI } from "../../services/api";
+// Adicionado searchAPI para buscar detalhes
+import { dashboardAPI, paymentsAPI, searchAPI } from "../../services/api";
 
+// ... (Mantenha o MOCK_GUEST_DATA e THEMES como estavam) ...
 const MOCK_GUEST_DATA = {
   stats: {
     totalPhotocards: 127,
@@ -46,56 +49,15 @@ const MOCK_GUEST_DATA = {
         "https://i.pinimg.com/736x/59/f8/0d/59f80d212b56d7b7efab33118606f35d.jpg",
       amount: 45.0,
       seller_name: "lovejurin",
-      due_date: new Date().toISOString(), // Vence hoje
+      due_date: new Date().toISOString(),
       status: "vence hoje",
       payment_type: "Item + Frete",
       ceg_name: "CEG XG",
       late_fee: 0,
     },
-    {
-      id: "guest-2",
-      photocard_name: "Chisa - AWE POB",
-      photocard_image:
-        "https://i.pinimg.com/736x/1a/ce/56/1ace56135e1c1d76149ab35f0bcce8c5.jpg",
-      amount: 120.0,
-      seller_name: "lovejurin",
-      due_date: new Date(Date.now() + 86400000 * 2).toISOString(), // +2 dias
-      status: "pendente",
-      payment_type: "Item",
-      ceg_name: "CEG XG Mascara",
-      late_fee: 0,
-    },
-    {
-      id: "guest-3",
-      photocard_name: "Maya - AWE",
-      photocard_image:
-        "https://i.pinimg.com/736x/9a/45/f4/9a45f486eca3c11f9a2fe4a40fd85690.jpg",
-      amount: 55.5,
-      seller_name: "alphaztore",
-      due_date: new Date(Date.now() - 86400000).toISOString(), // -1 dia (atrasado)
-      status: "atrasado",
-      payment_type: "Frete Nacional",
-      ceg_name: "Envios da Maya",
-      late_fee: 2.5,
-    },
+    // ... outros itens mockados
   ],
-  recentActivity: [
-    {
-      type: "photocard_added",
-      description: "Jurin - Left Right adicionado à coleção",
-      time: "2 horas atrás",
-    },
-    {
-      type: "wishlist_added",
-      description: "Harvey - Puppet Show adicionado à wishlist",
-      time: "5 horas atrás",
-    },
-    {
-      type: "payment_made",
-      description: "Pagamento de Juria realizado",
-      time: "Ontem",
-    },
-  ],
+  recentActivity: [],
 };
 
 const THEMES = {
@@ -113,6 +75,7 @@ const THEMES = {
   gray: { name: "Cinza" },
 };
 
+// ... (Mantenha o PaymentModal como estava) ...
 const PaymentModal = ({ isVisible, onClose, payments, onPaymentSubmit }) => {
   if (!isVisible) return null;
 
@@ -228,11 +191,40 @@ const DashboardHome = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
 
+  // --- NOVOS ESTADOS PARA O DETAILS MODAL ---
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [selectedItemDetails, setSelectedItemDetails] = useState(null);
+  const [detailsType, setDetailsType] = useState("photocards");
+  const [loadingDetails, setLoadingDetails] = useState(false);
+
   const {
     stats = {},
     pendingPayments = [],
     recentActivity = [],
   } = dashboardData;
+
+  // --- NOVA FUNÇÃO PARA ABRIR DETALHES ---
+  const handleOpenItemDetails = async (type, id) => {
+    // Se for mock guest, não tenta buscar na API
+    if (user?.isGuest || String(id).startsWith("guest")) {
+      alert("Detalhes indisponíveis no modo visitante.");
+      return;
+    }
+
+    setDetailsType(type);
+    setDetailsModalOpen(true);
+    setLoadingDetails(true);
+
+    try {
+      const data = await searchAPI.getDetails(type, id);
+      setSelectedItemDetails(data);
+    } catch (error) {
+      console.error("Erro ao buscar detalhes:", error);
+      setSelectedItemDetails(null);
+    } finally {
+      setLoadingDetails(false);
+    }
+  };
 
   const isSellerSelected = (seller) => {
     const paymentsOfSeller = pendingPayments
@@ -273,7 +265,6 @@ const DashboardHome = ({
   const handlePaymentSubmit = async () => {
     if (selectedPayments.length === 0) return;
 
-    // BLOQUEIO PARA GUEST
     if (user?.isGuest) {
       alert(
         "Modo Visitante: O pagamento não pode ser processado, pois é apenas uma simulação."
@@ -291,7 +282,7 @@ const DashboardHome = ({
       );
       setSelectedPayments([]);
       setIsModalOpen(false);
-      onRefreshData(); // Atualiza os dados do dashboard
+      onRefreshData();
     } catch (error) {
       console.error("Erro ao processar pagamentos:", error);
       alert("Erro ao processar pagamentos. Tente novamente.");
@@ -390,6 +381,16 @@ const DashboardHome = ({
         onPaymentSubmit={handlePaymentSubmit}
       />
 
+      {/* --- MODAL DE DETALHES --- */}
+      <DetailsModal
+        isOpen={detailsModalOpen}
+        onClose={() => setDetailsModalOpen(false)}
+        type={detailsType}
+        data={selectedItemDetails}
+        loading={loadingDetails}
+        onRelatedClick={handleOpenItemDetails}
+      />
+
       <div className="content">
         <div className="dashboard-header">
           <div className="welcome-banner">
@@ -427,10 +428,7 @@ const DashboardHome = ({
               ) : (
                 <p className="welcome-banner__subtitle">
                   Você está no <strong>Modo Visitante</strong>. Dados mostrados
-                  abaixo são apenas para demonstração, acesse Catálogo para
-                  pesquisar artistas e photocards no nosso banco.{" "}
-                  <strong>Clique em notificações</strong> para ver uma conta de
-                  teste.
+                  abaixo são apenas para demonstração.
                 </p>
               )}
 
@@ -663,7 +661,17 @@ const DashboardHome = ({
                               />
                             </td>
                             <td className="payment-schedule__cell-item">
-                              <div className="payment-schedule__item-wrapper">
+                              {/* --- AJUSTE: Clique para abrir detalhes --- */}
+                              <div
+                                className="payment-schedule__item-wrapper clickable-item"
+                                onClick={() =>
+                                  handleOpenItemDetails(
+                                    "photocards",
+                                    pay.photocard_id || pay.photocard // Assume que temos o ID
+                                  )
+                                }
+                                title="Clique para ver detalhes"
+                              >
                                 <div className="payment-schedule__preview">
                                   {pay.photocard_image ? (
                                     <img
@@ -754,6 +762,8 @@ const DashboardHome = ({
   );
 };
 
+// ... (Mantenha o restante do arquivo Dashboard principal, getInitialDarkMode, etc.) ...
+
 const getInitialDarkMode = () => {
   const storedMode = localStorage.getItem("i-collect-mode");
   if (storedMode) {
@@ -793,25 +803,20 @@ function Dashboard({ onLogout, user }) {
 
     setLoading(true);
 
-    // --- CORREÇÃO PARA ERRO NA PORTA 5000 ---
-    // Se for Visitante, carrega o MOCK local e NÃO chama o backend
     if (user.isGuest || user.id === "guest") {
       console.log("Modo Visitante: Carregando dados Mockados...");
-      // Simula um delay pequeno para parecer natural
       setTimeout(() => {
         setDashboardData(MOCK_GUEST_DATA);
         setLoading(false);
       }, 500);
-      return; // Interrompe aqui para não dar erro no fetch
+      return;
     }
-    // ---------------------------------------
 
     try {
       const data = await dashboardAPI.getDashboardData(user.id);
       setDashboardData(data);
     } catch (error) {
       console.error("Erro ao carregar dados do dashboard:", error);
-      // Fallback para dados mock em caso de erro
       setDashboardData({
         stats: {},
         pendingPayments: [],

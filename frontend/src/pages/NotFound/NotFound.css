@@ -20,11 +20,10 @@
   z-index: 10;
 }
 
-.icon-wrapper {
+.icon-wrapper-404 {
   position: relative;
   margin-top: 1rem;
   color: var(--theme-primary);
-  background-color: transparent;
   box-shadow: none;
 }
 

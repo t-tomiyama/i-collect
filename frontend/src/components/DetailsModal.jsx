@@ -69,7 +69,11 @@ const DetailsModal = ({
               </div>
               <div className="modal-title-section">
                 <span className="modal-chip">
-                  {type === "artists" ? data.category : type.toUpperCase()}
+                  {type === "artists"
+                    ? data.category
+                    : type
+                    ? type.toUpperCase()
+                    : "ITEM"}
                 </span>
                 <h2>{data.name || data.stage_name || data.full_name}</h2>
                 {data.artist_name && <h3>{data.artist_name}</h3>}
@@ -83,17 +87,20 @@ const DetailsModal = ({
                     <div className="info-item">
                       <CreditCard size={18} />{" "}
                       <span>
-                        {data.front_finish} / {data.back_finish}
+                        {data.front_finish || "Glossy"} /{" "}
+                        {data.back_finish || "Glossy"}
                       </span>
                     </div>
                     <div className="info-item">
                       <span>
-                        {data.LENGTH}cm x {data.WIDTH}cm
+                        {data.LENGTH || data.length || 8.5}cm x{" "}
+                        {data.WIDTH || data.width || 5.5}cm
                       </span>
                     </div>
                   </div>
 
-                  {data.related_set && data.related_set.length > 0 && (
+                  {/* Proteção com Optional Chaining (?.) */}
+                  {data.related_set?.length > 0 && (
                     <div className="related-section">
                       <h4>
                         <Layers size={16} /> Do Mesmo Set
@@ -116,7 +123,7 @@ const DetailsModal = ({
                     </div>
                   )}
 
-                  {data.related_release && data.related_release.length > 0 && (
+                  {data.related_release?.length > 0 && (
                     <div className="related-section">
                       <h4>
                         <Disc size={16} /> Do Mesmo Release (Era)
@@ -156,29 +163,27 @@ const DetailsModal = ({
                     </div>
                   </div>
 
-                  {data.category !== "Solo" &&
-                    data.members &&
-                    data.members.length > 0 && (
-                      <div className="members-section">
-                        <h4>
-                          <Users size={16} /> Membros
-                        </h4>
-                        <div className="mini-list">
-                          {data.members.map((member) => (
-                            <div key={member.id} className="mini-card">
-                              <img
-                                src={member.image || "/default-idol.jpg"}
-                                alt={member.stage_name}
-                              />
-                              <div className="mini-info">
-                                <strong>{member.stage_name}</strong>
-                                <span>{member.main_position}</span>
-                              </div>
+                  {data.category !== "Solo" && data.members?.length > 0 && (
+                    <div className="members-section">
+                      <h4>
+                        <Users size={16} /> Membros
+                      </h4>
+                      <div className="mini-list">
+                        {data.members.map((member) => (
+                          <div key={member.id} className="mini-card">
+                            <img
+                              src={member.image || "/default-idol.jpg"}
+                              alt={member.stage_name}
+                            />
+                            <div className="mini-info">
+                              <strong>{member.stage_name}</strong>
+                              <span>{member.main_position}</span>
                             </div>
-                          ))}
-                        </div>
+                          </div>
+                        ))}
                       </div>
-                    )}
+                    </div>
+                  )}
                 </>
               )}
 
@@ -205,7 +210,7 @@ const DetailsModal = ({
                     )}
                   </div>
 
-                  {data.groups && data.groups.length > 0 && (
+                  {data.groups?.length > 0 && (
                     <div className="members-section">
                       <h4>
                         <Star size={16} /> Carreira / Grupos

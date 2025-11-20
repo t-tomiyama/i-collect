@@ -105,6 +105,22 @@ export const bindersAPI = {
   },
 };
 
+export const searchAPI = {
+  searchQuery: async (query) => {
+    if (!query) return [];
+    const response = await api.get(`/api/search/query?q=${query}`);
+    return response.data;
+  },
+  getDetails: async (type, id) => {
+    if (!type || !id) {
+      console.error("Tipo ou ID faltando para getDetails.");
+      return null;
+    }
+    const response = await api.get(`/api/search/details/${type}/${id}`);
+    return response.data;
+  },
+};
+
 export const collectorsAPI = {
   getWishlist: async (userId) => {
     if (!userId) return [];
