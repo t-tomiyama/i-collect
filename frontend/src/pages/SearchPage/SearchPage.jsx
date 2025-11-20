@@ -84,29 +84,34 @@ export const SearchPage = ({ initialQuery = "" }) => {
   }, [searchQuery]);
 
   const handleCardClick = async (type, id) => {
-    if (modalOpen) setModalLoading(true);
-    else setModalOpen(true);
+    console.log("Clicou em:", type, id);
 
+    setModalOpen(true); // Abre o modal imediatamente para feedback
+    setModalLoading(true); // Mostra loading
     setModalType(type);
-    setModalData(null); // Limpa dados anteriores
-
-    if (!modalOpen) setModalLoading(true);
+    setModalData(null);
 
     try {
-      const res = await fetch(`${API_URL}/search/details/${type}/${id}`);
-      const json = await res.json();
+      const response = await fetch(`${API_URL}/search/details/${type}/${id}`);
+
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`);
+      }
+
+      const json = await response.json();
+
       if (json.success) {
         setModalData(json.data);
       } else {
-        console.error("Erro na resposta da API:", json);
+        console.error("API retornou erro:", json);
       }
     } catch (error) {
       console.error("Erro ao buscar detalhes:", error);
+      // Opcional: Mostrar erro no modal se quiser
     } finally {
       setModalLoading(false);
     }
   };
-
   const fetchInitialData = async () => {
     setLoading(true);
     setError("");
@@ -276,7 +281,6 @@ export const SearchPage = ({ initialQuery = "" }) => {
         loading={modalLoading}
         onRelatedClick={handleCardClick}
       />
-
       <div className="search-bar-wrapper">
         <Search className="search-bar__icon" size={20} />
         <input
@@ -304,7 +308,6 @@ export const SearchPage = ({ initialQuery = "" }) => {
           </button>
         )}
       </div>
-
       {error && (
         <div
           className="error-message"
@@ -318,7 +321,6 @@ export const SearchPage = ({ initialQuery = "" }) => {
           {error}
         </div>
       )}
-
       <div className="search-filters">
         {FILTERS.map((filter) => (
           <button
@@ -333,7 +335,6 @@ export const SearchPage = ({ initialQuery = "" }) => {
           </button>
         ))}
       </div>
-
       {loading && (
         <div
           style={{
@@ -346,7 +347,6 @@ export const SearchPage = ({ initialQuery = "" }) => {
           <p>Buscando...</p>
         </div>
       )}
-
       {showNoResults && (
         <div
           style={{
@@ -360,53 +360,7 @@ export const SearchPage = ({ initialQuery = "" }) => {
           <p>Tente termos diferentes ou remova os filtros.</p>
         </div>
       )}
-
-      {!loading && filteredPhotocards.length > 0 && (
-        <div className="search-section">
-          <h2 className="search-section__title">Photocards</h2>
-          <div className="photocard-grid">
-            {filteredPhotocards.map((pc) => (
-              <div
-                key={pc.id}
-                className="photocard-card"
-                onClick={() => handleCardClick("photocards", pc.id)}
-                style={{ cursor: "pointer" }}
-              >
-                <div className="photocard-card__image-wrapper">
-                  <img
-                    src={pc.front_image || pc.image_url || "/default-card.jpg"}
-                    alt={pc.name}
-                    className="photocard-card__image"
-                  />
-                </div>
-                <div className="photocard-card__info">
-                  <span className="photocard-card__name">
-                    {pc.stage_name || pc.name}
-                  </span>
-                  {pc.artist_name && (
-                    <span className="photocard-card__group">
-                      {pc.artist_name}
-                    </span>
-                  )}
-                  {pc.front_finish && (
-                    <div className="photocard-tooltip-wrapper">
-                      <span
-                        className={`photocard-card__type-badge type-${pc.front_finish.toLowerCase()}`}
-                      >
-                        {pc.front_finish}
-                      </span>
-                      <div className="photocard-tooltip-content">
-                        Acabamento: {pc.front_finish}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
+      filteredPhotocards.length
       {!loading && filteredReleases.length > 0 && (
         <div className="search-section">
           <h2 className="search-section__title">Releases</h2>
@@ -423,7 +377,6 @@ export const SearchPage = ({ initialQuery = "" }) => {
           </div>
         </div>
       )}
-
       {!loading && filteredIdols.length > 0 && (
         <div className="search-section">
           <h2 className="search-section__title">Idols</h2>
@@ -449,7 +402,6 @@ export const SearchPage = ({ initialQuery = "" }) => {
           </div>
         </div>
       )}
-
       {!loading && filteredArtists.length > 0 && (
         <div className="search-section">
           <h2 className="search-section__title">Artistas/Grupos</h2>
