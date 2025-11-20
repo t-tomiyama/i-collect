@@ -9,10 +9,10 @@ import {
   Eye,
   EyeOff,
   AtSign,
-  Smartphone,
   Globe,
 } from "lucide-react";
 
+import { authAPI } from "../../services/api";
 import "../../App.css";
 
 const PhotocardsBackground = () => {
@@ -34,20 +34,31 @@ const Register = ({ onRegister }) => {
 
   const navigate = useNavigate();
 
+  // 2. CORREÇÃO NO USEEFFECT
   useEffect(() => {
-    const mockSocials = [
-      { id: 1, name: "Instagram" },
-      { id: 2, name: "Twitter" },
-      { id: 3, name: "TikTok" },
-    ];
+    const loadSocials = async () => {
+      const mockSocials = [
+        { id: 1, name: "Instagram" },
+        { id: 2, name: "Twitter / X" },
+        { id: 3, name: "TikTok" },
+      ];
 
-    fetch("https://i-collect-backend.onrender.com/api/social-medias")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) setSocialMedias(data.data);
-        else setSocialMedias(mockSocials);
-      })
-      .catch(() => setSocialMedias(mockSocials));
+      try {
+        // Usa a função do api.js que aponta corretamente para /api/auth/social-medias
+        const response = await authAPI.getSocialMedias();
+
+        if (response.success) {
+          setSocialMedias(response.data);
+        } else {
+          setSocialMedias(mockSocials);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar redes, usando fallback", error);
+        setSocialMedias(mockSocials);
+      }
+    };
+
+    loadSocials();
   }, []);
 
   const handleSubmit = (e) => {
