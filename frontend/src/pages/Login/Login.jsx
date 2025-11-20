@@ -247,18 +247,11 @@ const Login = ({ onLogin }) => {
 
         <button
           type="button"
-          className="btn guest-button"
+          className="btn guest-button btn-secondary"
           onClick={handleGuestAccess}
         >
           <span>Acessar como visitante</span>
         </button>
-
-        <div className="divider">
-          <span className="divider-text">ou conecte-se com</span>
-        </div>
-
-        <div className="social-login"></div>
-
         <p className="signup-text">
           Novo por aqui?{" "}
           <a
