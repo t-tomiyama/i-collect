@@ -358,7 +358,6 @@ export const SearchPage = ({ initialQuery = "" }) => {
         </div>
       )}
 
-      {/* --- SECTION PHOTOCARDS ATUALIZADA COM BADGE --- */}
       {!loading && filteredPhotocards.length > 0 && (
         <div className="search-section">
           <h2 className="search-section__title">Photocards</h2>
