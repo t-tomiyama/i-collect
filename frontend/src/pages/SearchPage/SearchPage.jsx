@@ -11,16 +11,7 @@ const FILTERS = [
   { id: "artists", name: "Artistas/Grupos", icon: Users },
 ];
 
-const CD_IMG_LIGHT = "https://i.postimg.cc/ZqhVJxg3/CD.png";
-const CD_IMG_DARK =
-  "https://www.pngall.com/wp-content/uploads/13/CD-Blank-PNG-Clipart.png";
-
 const ReleaseCard = ({ title, artist, coverUrl, onClick }) => {
-  const isDarkMode =
-    document.body.classList.contains("dark") ||
-    document.getElementById("i-collect-dashboard")?.classList.contains("dark");
-
-  const cdImage = isDarkMode ? CD_IMG_DARK : CD_IMG_LIGHT;
   return (
     <div
       className="release-card"
@@ -28,7 +19,11 @@ const ReleaseCard = ({ title, artist, coverUrl, onClick }) => {
       style={{ cursor: "pointer" }}
     >
       <div className="release-card__content">
-        <img src={cdImage} alt="CD" className="release-card__cd" />
+        <img
+          src="https://www.pngall.com/wp-content/uploads/13/CD-Blank-PNG-Clipart.png"
+          alt="CD"
+          className="release-card__cd"
+        />
         <img
           src={coverUrl}
           alt={`${title} cover`}
@@ -115,7 +110,6 @@ export const SearchPage = ({ initialQuery = "" }) => {
     }
   };
 
-  // Função para o efeito holográfico/brilho (Copiado do BinderPage)
   const handleMouseMove = (e) => {
     const card = e.currentTarget;
     const rect = card.getBoundingClientRect();
@@ -134,14 +128,14 @@ export const SearchPage = ({ initialQuery = "" }) => {
     try {
       const [photocardsRes, releasesRes, idolsRes, artistsRes] =
         await Promise.all([
-          fetch(`${API_URL}/search/photocards?limit=12`).then((res) =>
+          fetch(`${API_URL}/search/photocards?limit=18`).then((res) =>
             res.json()
           ),
-          fetch(`${API_URL}/search/releases?limit=12`).then((res) =>
+          fetch(`${API_URL}/search/releases?limit=18`).then((res) =>
             res.json()
           ),
-          fetch(`${API_URL}/search/idols?limit=12`).then((res) => res.json()),
-          fetch(`${API_URL}/search/artists?limit=12`).then((res) => res.json()),
+          fetch(`${API_URL}/search/idols?limit=18`).then((res) => res.json()),
+          fetch(`${API_URL}/search/artists?limit=18`).then((res) => res.json()),
         ]);
 
       if (photocardsRes.success) setPhotocards(photocardsRes.data || []);
