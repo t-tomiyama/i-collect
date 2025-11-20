@@ -72,43 +72,64 @@ const Register = ({ onRegister }) => {
     setError("");
   };
 
+  const handleSelectChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: parseInt(e.target.value, 10), // Converte "1" para 1
+    });
+    setError("");
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
+    // Validação extra antes de enviar
+    if (!formData.social_media_id) {
+      setError("Selecione uma rede social.");
+      setLoading(false);
+      return;
+    }
+
+    // Prepara os dados garantindo que o ID é número
+    const payload = {
+      ...formData,
+      social_media_id: Number(formData.social_media_id),
+    };
+
     try {
-      // 1. Chama a API
-      const response = await authAPI.register(formData);
+      console.log("Enviando payload:", payload); // Para debug
+      const response = await authAPI.register(payload);
 
       if (response.success) {
         const { token, user } = response.data;
 
-        // 2. SALVAR SESSÃO
         localStorage.setItem("authToken", token);
         localStorage.setItem("user", JSON.stringify(user));
         setCookie("authToken", token, 1);
 
-        // 3. Atualiza estado global
         if (onRegister) {
           onRegister(user, token);
         }
 
-        // 4. Navega para o Dashboard
         navigate("/dashboard");
       } else {
-        // Caso o sucesso seja false (mas status 200 - raro na sua config atual)
         setError(response.error || "Erro ao criar conta.");
       }
     } catch (err) {
-      console.error("Erro detalhado:", err.response);
+      console.error("Erro no registro:", err);
 
-      // MELHORIA NO TRATAMENTO DE ERRO
-      if (err.response && err.response.data && err.response.data.error) {
-        // Mostra o erro que veio do Backend (ex: "Email já cadastrado")
-        setError(err.response.data.error);
+      // Tratamento de erro aprimorado
+      if (err.response && err.response.data) {
+        // Se o backend mandou { success: false, error: "..." }
+        if (err.response.data.error) {
+          setError(err.response.data.error);
+        } else {
+          setError("Erro desconhecido no servidor (400).");
+        }
       } else {
-        setError("Erro de conexão. Tente novamente.");
+        setError("Erro de conexão. Verifique sua internet.");
       }
     } finally {
       setLoading(false);
@@ -117,10 +138,11 @@ const Register = ({ onRegister }) => {
 
   return (
     <div className="app-container">
+      {/* ... (PhotocardsBackground e Header do Card mantidos) ... */}
       <PhotocardsBackground />
-
       <div className="login-card theme-lavender">
         <div className="login-header">
+          {/* ... ícone e titulo ... */}
           <div className="icon-wrapper">
             <BookHeart size={32} strokeWidth={2} />
           </div>
@@ -149,6 +171,7 @@ const Register = ({ onRegister }) => {
           )}
 
           <div className="form-inputs">
+            {/* ... Inputs de Texto (Name, Username, Email, Password) usam handleChange ... */}
             <div className="input-group">
               <input
                 type="text"
@@ -163,22 +186,20 @@ const Register = ({ onRegister }) => {
                 <User size={20} />
               </span>
             </div>
-
             <div className="input-group">
               <input
                 type="text"
                 name="username"
-                placeholder="Username"
+                placeholder="Usuário Login"
                 className="form-input"
                 value={formData.username}
                 onChange={handleChange}
                 required
               />
               <span className="input-icon">
-                <AtSign size={20} />
+                <Lock size={20} />
               </span>
             </div>
-
             <div className="input-group">
               <input
                 type="email"
@@ -193,7 +214,6 @@ const Register = ({ onRegister }) => {
                 <Mail size={20} />
               </span>
             </div>
-
             <div className="input-group">
               <input
                 type={showPassword ? "text" : "password"}
@@ -230,12 +250,13 @@ const Register = ({ onRegister }) => {
               Dados do Coletor:
             </p>
 
+            {/* SELECT DA REDE SOCIAL - Usa handleSelectChange ou o handleChange modificado */}
             <div className="input-group">
               <select
                 name="social_media_id"
                 className="form-input"
                 value={formData.social_media_id}
-                onChange={handleChange}
+                onChange={handleSelectChange} // AQUI: Use a função que converte para Int
                 required
                 style={{ appearance: "none" }}
               >
@@ -257,7 +278,7 @@ const Register = ({ onRegister }) => {
               <input
                 type="text"
                 name="social_media_handle"
-                placeholder="Seu @usuario na rede (sem @)"
+                placeholder="Seu @ na rede"
                 className="form-input"
                 value={formData.social_media_handle}
                 onChange={handleChange}
@@ -275,13 +296,11 @@ const Register = ({ onRegister }) => {
             style={{ marginTop: "1.5rem", opacity: loading ? 0.7 : 1 }}
             disabled={loading}
           >
-            <span>
-              {loading ? "Criando conta..." : "Cadastrar e Virar Coletor"}
-            </span>
+            <span>{loading ? "Criando..." : "Cadastrar"}</span>
             {!loading && <ArrowRight size={20} strokeWidth={2.5} />}
           </button>
         </form>
-
+        {/* ... Footer de login ... */}
         <p className="signup-text">
           Já tem conta?{" "}
           <a
