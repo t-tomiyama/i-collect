@@ -1,5 +1,4 @@
 import axios from "axios";
-import { authAPI } from "../../services/api";
 
 const API_URL =
   import.meta.env.VITE_API_URL || "https://i-collect-backend.onrender.com";
