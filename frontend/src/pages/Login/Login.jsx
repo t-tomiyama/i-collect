@@ -12,7 +12,7 @@ import {
 import "../../App.css";
 
 // URL do seu backend no Render (ajuste conforme necessário)
-const API_URL = "https://seu-projeto.onrender.com/api";
+const API_URL = "https://i-collect-backend.onrender.com//api";
 
 const PhotocardsBackground = () => {
   const HeartIcon = () => (
