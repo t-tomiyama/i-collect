@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Search, Music, Users, Package, User, X } from "lucide-react";
-import DetailsModal from "../components/DetailsModal"; // Ajuste o caminho conforme sua estrutura
-
+import DetailsModal from "../../components/DetailsModal";
 import "./SearchPage.css";
 
 const API_URL = "https://i-collect-backend.onrender.com/api";
@@ -19,7 +18,6 @@ const FILTERS = [
   { id: "artists", name: "Artistas/Grupos", icon: Users },
 ];
 
-// Componente interno ReleaseCard atualizado para receber onClick
 const ReleaseCard = ({ title, artist, coverUrl, onClick }) => {
   return (
     <div
@@ -85,16 +83,13 @@ export const SearchPage = ({ initialQuery = "" }) => {
     }
   }, [searchQuery]);
 
-  // --- FUNÇÃO PARA ABRIR O MODAL ---
   const handleCardClick = async (type, id) => {
-    // Se o modal já estiver aberto (navegação interna), mostra loading
     if (modalOpen) setModalLoading(true);
     else setModalOpen(true);
 
     setModalType(type);
     setModalData(null); // Limpa dados anteriores
 
-    // Garante loading visual se abriu agora
     if (!modalOpen) setModalLoading(true);
 
     try {
