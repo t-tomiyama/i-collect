@@ -74,7 +74,6 @@ export const SearchPage = ({ initialQuery = "" }) => {
     fetchInitialData();
   }, []);
 
-  // Buscar dados quando a query mudar
   useEffect(() => {
     if (searchQuery.trim()) {
       performSearch();
@@ -86,8 +85,8 @@ export const SearchPage = ({ initialQuery = "" }) => {
   const handleCardClick = async (type, id) => {
     console.log("Clicou em:", type, id);
 
-    setModalOpen(true); // Abre o modal imediatamente para feedback
-    setModalLoading(true); // Mostra loading
+    setModalOpen(true);
+    setModalLoading(true);
     setModalType(type);
     setModalData(null);
 
@@ -107,7 +106,6 @@ export const SearchPage = ({ initialQuery = "" }) => {
       }
     } catch (error) {
       console.error("Erro ao buscar detalhes:", error);
-      // Opcional: Mostrar erro no modal se quiser
     } finally {
       setModalLoading(false);
     }
@@ -219,7 +217,6 @@ export const SearchPage = ({ initialQuery = "" }) => {
     });
   };
 
-  // Aplicar filtros locais nos dados já carregados
   const getFilteredData = () => {
     const showAll = activeFilters.size === 0;
     const lowerQuery = searchQuery.toLowerCase();
@@ -360,7 +357,75 @@ export const SearchPage = ({ initialQuery = "" }) => {
           <p>Tente termos diferentes ou remova os filtros.</p>
         </div>
       )}
-      filteredPhotocards.length
+
+      {/* --- SECTION PHOTOCARDS ATUALIZADA COM BADGE --- */}
+      {!loading && filteredPhotocards.length > 0 && (
+        <div className="search-section">
+          <h2 className="search-section__title">Photocards</h2>
+          <div className="photocard-grid">
+            {filteredPhotocards.map((pc) => (
+              <div
+                key={pc.id}
+                className="photocard-card"
+                onClick={() => handleCardClick("photocards", pc.id)}
+                style={{ cursor: "pointer" }}
+              >
+                <div className="photocard-card__image-wrapper">
+                  <img
+                    src={pc.front_image || pc.image_url || "/default-card.jpg"}
+                    alt={pc.name}
+                    className="photocard-card__image"
+                  />
+                </div>
+
+                {/* Info Section Refatorada para Badge */}
+                <div className="photocard-card__info">
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "start",
+                      gap: "0.5rem",
+                      marginBottom: "4px",
+                    }}
+                  >
+                    <span className="photocard-card__name">
+                      {pc.stage_name || pc.name}
+                    </span>
+
+                    {/* BADGE VISUAL */}
+                    {pc.front_finish && (
+                      <span
+                        style={{
+                          backgroundColor: "#f3f4f6",
+                          color: "#374151",
+                          fontSize: "0.65rem",
+                          padding: "0.15rem 0.5rem",
+                          borderRadius: "9999px",
+                          border: "1px solid #e5e7eb",
+                          fontWeight: "600",
+                          whiteSpace: "nowrap",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.025em",
+                        }}
+                      >
+                        {pc.front_finish}
+                      </span>
+                    )}
+                  </div>
+
+                  {pc.artist_name && (
+                    <span className="photocard-card__group">
+                      {pc.artist_name}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {!loading && filteredReleases.length > 0 && (
         <div className="search-section">
           <h2 className="search-section__title">Releases</h2>
