@@ -5,12 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "yarn run build:css && vite build",
+    "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "build:css": "tailwindcss -i ./src/input.css -o ./dist/output.css --watch"
+    "preview": "vite preview"
   },
   "dependencies": {
+    "@tailwindcss/cli": "^4.1.17",
+    "@tailwindcss/vite": "^4.1.17",
     "axios": "^1.13.2",
     "lucide-react": "^0.553.0",
     "react": "^19.2.0",
