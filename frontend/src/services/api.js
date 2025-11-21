@@ -87,9 +87,19 @@ export const paymentsAPI = {
 };
 
 export const bindersAPI = {
-  getUserBinders: async (userId) => {
-    if (!userId) return [];
-    const response = await api.get(`/api/binders/user/${userId}`);
+  getUserBinders: async (userId, socialMedia) => {
+    // Nota: Ajustei para receber socialMedia também, conforme sua rota backend
+    if (!userId || !socialMedia) return [];
+    const response = await api.get(`/api/binders/${userId}/${socialMedia}`);
+    return response.data;
+  },
+
+  // ADICIONE ESTA FUNÇÃO NOVA
+  getBinderDetails: async (username, socialMedia, binderId) => {
+    if (!username || !socialMedia || !binderId) return null;
+    const response = await api.get(
+      `/api/binders/${username}/${socialMedia}/${binderId}`
+    );
     return response.data;
   },
 
@@ -99,8 +109,12 @@ export const bindersAPI = {
     return response.data;
   },
 
-  createBinder: async (binderData) => {
-    const response = await api.post("/api/binders", binderData);
+  createBinder: async (username, socialMedia, binderData) => {
+    // Ajustado para passar params na URL conforme seu backend
+    const response = await api.post(
+      `/api/binders/${username}/${socialMedia}`,
+      binderData
+    );
     return response.data;
   },
 };
