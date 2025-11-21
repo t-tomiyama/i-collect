@@ -481,6 +481,19 @@ body {
   transform: scale(1.35);
 }
 
+.spiral-binding,
+.hole-punch-strip,
+.cover-border,
+.name-tag,
+.elastic-band,
+.spiral-arcs,
+.spiral-arc,
+.hole {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
 .book {
   width: 700px;
   height: 500px;
@@ -488,7 +501,6 @@ body {
   transform-style: preserve-3d;
   transition: transform 1s ease-in-out;
   transform: translateX(-175px);
-  transform-style: preserve-3d;
 }
 
 .book.open {
@@ -507,12 +519,14 @@ body {
   transform-style: preserve-3d;
   transform-origin: left center;
   transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1);
+  will-change: transform, z-index;
 }
 
 .face {
   position: absolute;
   width: 100%;
   height: 100%;
+  -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   display: flex;
   flex-direction: column;
@@ -520,6 +534,8 @@ body {
   align-items: center;
   box-sizing: border-box;
   transform-style: preserve-3d;
+  will-change: transform;
+  z-index: 2;
 }
 
 .face.back {
@@ -541,6 +557,7 @@ body {
   height: 480px;
   top: 10px;
   left: 0;
+  transform: translateZ(0.1px);
 }
 
 .face.back:not(.cover-face) {
@@ -558,6 +575,7 @@ body {
   height: 480px;
   top: 10px;
   left: 0;
+  transform: rotateY(180deg) translateZ(0.1px);
 }
 
 .page.flipped {
