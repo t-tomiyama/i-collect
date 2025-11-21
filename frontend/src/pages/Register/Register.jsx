@@ -218,14 +218,14 @@ const Register = ({ onRegister }) => {
               <input
                 type="text"
                 name="username"
-                placeholder="Usuário Login"
+                placeholder="Username"
                 className="form-input"
                 value={formData.username}
                 onChange={handleChange}
                 required
               />
               <span className="input-icon">
-                <Lock size={20} />
+                <AtSign size={20} />
               </span>
             </div>
             <div className="input-group">

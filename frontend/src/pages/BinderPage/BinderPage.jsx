@@ -464,9 +464,7 @@ const CardConfigModal = ({
           {currentCard ? (
             <div className="selected-card-details">
               <h3>
-                {isEditing ? "Editando" : "Configurar Card"}: **
-                {currentCard.name}
-                **
+                {isEditing ? "Editando" : "Configurar Card"}:{currentCard.name}
               </h3>
               <div className="preview-card-wrapper">
                 <div
@@ -535,7 +533,7 @@ const CardConfigModal = ({
                 </div>
               </div>
               <button
-                className="confirm-add-btn"
+                className="confirm-add-btn btn-primary"
                 onClick={handleConfirmAction}
                 title={
                   isEditing
