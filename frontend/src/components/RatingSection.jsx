@@ -6,7 +6,6 @@ const RateItem = ({ item, index, type }) => {
   let RankIcon;
   let rankClass = "";
 
-  // Define ícones e cores para 1º, 2º e 3º lugar
   switch (index) {
     case 0:
       RankIcon = Crown;
