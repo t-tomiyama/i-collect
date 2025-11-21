@@ -11,10 +11,7 @@ const FILTERS = [
   { id: "artists", name: "Artistas/Grupos", icon: Users },
 ];
 
-// --- CORREÇÃO AQUI: Mapeamento Robusto ---
-// Garante que tanto 'cat-artists' quanto 'artists' funcionem
 const SECTION_TO_FILTER_MAP = {
-  // IDs da Sidebar ou URL
   pcs: "photocards",
   "cat-pcs": "photocards",
   photocards: "photocards",
@@ -76,16 +73,26 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
   const [modalLoading, setModalLoading] = useState(false);
   const [isFlippedInModal, setIsFlippedInModal] = useState(false);
 
-  // Reset ao mudar de seção (Rota)
+  // --- ALTERAÇÃO 1: Configurar filtros ativos ao carregar a seção ---
   useEffect(() => {
     setPhotocards([]);
     setReleases([]);
     setIdols([]);
     setArtists([]);
     setSearchQuery("");
-    // Mantém visualmente desligado (cinza), mas a lógica de fetch abaixo usará o targetSection
-    setActiveFilters(new Set());
-  }, [initialSection]);
+
+    const newFilters = new Set();
+    if (targetSection) {
+      // Ativa o botão correspondente à seção
+      newFilters.add(targetSection);
+
+      // Regra específica: Se for Artistas, ativa Idols também
+      if (targetSection === "artists") {
+        newFilters.add("idols");
+      }
+    }
+    setActiveFilters(newFilters);
+  }, [initialSection, targetSection]);
 
   useEffect(() => {
     if (searchQuery.trim()) {
@@ -107,11 +114,9 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
 
     try {
       const promises = [];
-      // Se for uma seção específica, carregamos 100 (modo catálogo). Se for geral, 18.
       const LIMIT = targetSection ? 100 : 18;
 
-      // Lógica de Filtragem no Carregamento Inicial:
-      // Só busca se NÃO tiver targetSection (Dashboard geral) OU se for a seção específica.
+      // --- ALTERAÇÃO 2: Lógica de Fetch considerando a regra Artista + Idol ---
 
       if (!targetSection || targetSection === "photocards") {
         promises.push(
@@ -129,7 +134,12 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
         );
       }
 
-      if (!targetSection || targetSection === "idols") {
+      // Seção Idols OU Seção Artists (mostra idols também)
+      if (
+        !targetSection ||
+        targetSection === "idols" ||
+        targetSection === "artists"
+      ) {
         promises.push(
           fetch(`${API_URL}/search/idols?limit=${LIMIT}`)
             .then((res) => res.json())
@@ -168,8 +178,6 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
     try {
       const searchPromises = [];
 
-      // Na busca manual (digitando), respeitamos os botões de filtro clicados pelo usuário.
-      // Como iniciamos activeFilters vazio, a busca pesquisa em TUDO por padrão.
       const isPcsActive =
         activeFilters.size === 0 || activeFilters.has("photocards");
       const isRelActive =
@@ -235,6 +243,8 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
     });
   };
 
+  const isFilterActive = (filterId) => activeFilters.has(filterId);
+
   const handleCardClick = async (type, id) => {
     setModalOpen(true);
     setModalLoading(true);
@@ -264,7 +274,6 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
   };
 
   const getFilteredData = () => {
-    // Filtro local apenas para Search Query em cima dos resultados já carregados
     const showAll = activeFilters.size === 0;
     const lowerQuery = searchQuery.toLowerCase();
 
@@ -456,7 +465,7 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
           <button
             key={filter.id}
             className={`btn ${
-              activeFilters.has(filter.id) ? "btn-primary" : "btn-secondary"
+              isFilterActive(filter.id) ? "btn-primary" : "btn-secondary"
             }`}
             onClick={() => handleFilterClick(filter.id)}
           >
