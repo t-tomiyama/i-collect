@@ -11,10 +11,13 @@ const FILTERS = [
   { id: "artists", name: "Artistas/Grupos", icon: Users },
 ];
 
-const SIDEBAR_TO_FILTER_MAP = {
+const SECTION_TO_FILTER_MAP = {
   pcs: "photocards",
+  photocards: "photocards",
   albums: "releases",
+  releases: "releases",
   artists: "artists",
+  idols: "idols",
 };
 
 const ReleaseCard = ({ title, artist, coverUrl, onClick }) => {
@@ -44,7 +47,9 @@ const ReleaseCard = ({ title, artist, coverUrl, onClick }) => {
   );
 };
 
-export const SearchPage = ({ initialQuery = "" }) => {
+export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
+  const targetSection = SECTION_TO_FILTER_MAP[initialSection];
+
   const [activeFilters, setActiveFilters] = useState(new Set());
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [loading, setLoading] = useState(false);
@@ -62,19 +67,13 @@ export const SearchPage = ({ initialQuery = "" }) => {
   const [isFlippedInModal, setIsFlippedInModal] = useState(false);
 
   useEffect(() => {
-    if (initialQuery) {
-      setSearchQuery(initialQuery);
-    }
-  }, [initialQuery]);
-
-  useEffect(() => {
-    if (modalOpen) document.body.classList.add("info-visible");
-    else document.body.classList.remove("info-visible");
-  }, [modalOpen]);
-
-  useEffect(() => {
-    fetchInitialData();
-  }, []);
+    setPhotocards([]);
+    setReleases([]);
+    setIdols([]);
+    setArtists([]);
+    setSearchQuery("");
+    setActiveFilters(new Set());
+  }, [initialSection]);
 
   useEffect(() => {
     if (searchQuery.trim()) {
@@ -82,73 +81,57 @@ export const SearchPage = ({ initialQuery = "" }) => {
     } else {
       fetchInitialData();
     }
-  }, [searchQuery]);
+  }, [initialSection, searchQuery]);
 
-  const handleCardClick = async (type, id) => {
-    console.log("Clicou em:", type, id);
-
-    setModalOpen(true);
-    setModalLoading(true);
-    setIsFlippedInModal(false); // Reseta o flip ao abrir
-    setModalType(type);
-    setModalData(null);
-
-    try {
-      const response = await fetch(`${API_URL}/search/details/${type}/${id}`);
-
-      if (!response.ok) {
-        throw new Error(`Erro HTTP: ${response.status}`);
-      }
-
-      const json = await response.json();
-
-      if (json.success) {
-        setModalData(json.data);
-      } else {
-        console.error("API retornou erro:", json);
-      }
-    } catch (error) {
-      console.error("Erro ao buscar detalhes:", error);
-    } finally {
-      setModalLoading(false);
-    }
-  };
-
-  const handleMouseMove = (e) => {
-    const card = e.currentTarget;
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    card.style.setProperty("--x", `${x}px`);
-    card.style.setProperty("--y", `${y}px`);
-    card.style.setProperty("--bg-x", `${(x / rect.width) * 100}%`);
-    card.style.setProperty("--bg-y", `${(y / rect.height) * 100}%`);
-  };
+  useEffect(() => {
+    if (modalOpen) document.body.classList.add("info-visible");
+    else document.body.classList.remove("info-visible");
+  }, [modalOpen]);
 
   const fetchInitialData = async () => {
     setLoading(true);
     setError("");
 
     try {
-      const [photocardsRes, releasesRes, idolsRes, artistsRes] =
-        await Promise.all([
-          fetch(`${API_URL}/search/photocards?limit=18`).then((res) =>
-            res.json()
-          ),
-          fetch(`${API_URL}/search/releases?limit=18`).then((res) =>
-            res.json()
-          ),
-          fetch(`${API_URL}/search/idols?limit=18`).then((res) => res.json()),
-          fetch(`${API_URL}/search/artists?limit=18`).then((res) => res.json()),
-        ]);
+      const promises = [];
+      const LIMIT = targetSection ? 100 : 18;
 
-      if (photocardsRes.success) setPhotocards(photocardsRes.data || []);
-      if (releasesRes.success) setReleases(releasesRes.data || []);
-      if (idolsRes.success) setIdols(idolsRes.data || []);
-      if (artistsRes.success) setArtists(artistsRes.data || []);
+      if (!targetSection || targetSection === "photocards") {
+        promises.push(
+          fetch(`${API_URL}/search/photocards?limit=${LIMIT}`)
+            .then((res) => res.json())
+            .then((data) => (data.success ? setPhotocards(data.data) : []))
+        );
+      }
+
+      if (!targetSection || targetSection === "releases") {
+        promises.push(
+          fetch(`${API_URL}/search/releases?limit=${LIMIT}`)
+            .then((res) => res.json())
+            .then((data) => (data.success ? setReleases(data.data) : []))
+        );
+      }
+
+      if (!targetSection || targetSection === "idols") {
+        promises.push(
+          fetch(`${API_URL}/search/idols?limit=${LIMIT}`)
+            .then((res) => res.json())
+            .then((data) => (data.success ? setIdols(data.data) : []))
+        );
+      }
+
+      if (!targetSection || targetSection === "artists") {
+        promises.push(
+          fetch(`${API_URL}/search/artists?limit=${LIMIT}`)
+            .then((res) => res.json())
+            .then((data) => (data.success ? setArtists(data.data) : []))
+        );
+      }
+
+      await Promise.all(promises);
     } catch (err) {
-      console.error("Erro ao buscar dados iniciais:", err);
-      setError("Erro ao carregar dados. Tente novamente.");
+      console.error(err);
+      setError("Erro ao carregar dados.");
     } finally {
       setLoading(false);
     }
@@ -160,61 +143,62 @@ export const SearchPage = ({ initialQuery = "" }) => {
     setLoading(true);
     setError("");
 
+    setPhotocards([]);
+    setReleases([]);
+    setIdols([]);
+    setArtists([]);
+
     try {
       const searchPromises = [];
 
-      if (activeFilters.size === 0 || activeFilters.has("photocards")) {
+      const isPcsActive =
+        activeFilters.size === 0 || activeFilters.has("photocards");
+      const isRelActive =
+        activeFilters.size === 0 || activeFilters.has("releases");
+      const isIdolActive =
+        activeFilters.size === 0 || activeFilters.has("idols");
+      const isArtActive =
+        activeFilters.size === 0 || activeFilters.has("artists");
+
+      if (isPcsActive) {
         searchPromises.push(
           fetch(
             `${API_URL}/search/photocards?q=${encodeURIComponent(searchQuery)}`
           )
             .then((res) => res.json())
-            .then((data) => (data.success ? data.data : []))
+            .then((d) => (d.success ? setPhotocards(d.data) : []))
         );
       }
-
-      if (activeFilters.size === 0 || activeFilters.has("releases")) {
+      if (isRelActive) {
         searchPromises.push(
           fetch(
             `${API_URL}/search/releases?q=${encodeURIComponent(searchQuery)}`
           )
             .then((res) => res.json())
-            .then((data) => (data.success ? data.data : []))
+            .then((d) => (d.success ? setReleases(d.data) : []))
         );
       }
-
-      if (activeFilters.size === 0 || activeFilters.has("idols")) {
+      if (isIdolActive) {
         searchPromises.push(
           fetch(`${API_URL}/search/idols?q=${encodeURIComponent(searchQuery)}`)
             .then((res) => res.json())
-            .then((data) => (data.success ? data.data : []))
+            .then((d) => (d.success ? setIdols(d.data) : []))
         );
       }
-
-      if (activeFilters.size === 0 || activeFilters.has("artists")) {
+      if (isArtActive) {
         searchPromises.push(
           fetch(
             `${API_URL}/search/artists?q=${encodeURIComponent(searchQuery)}`
           )
             .then((res) => res.json())
-            .then((data) => (data.success ? data.data : []))
+            .then((d) => (d.success ? setArtists(d.data) : []))
         );
       }
 
-      const results = await Promise.allSettled(searchPromises);
-
-      results.forEach((result, index) => {
-        if (result.status === "fulfilled") {
-          const data = result.value;
-          if (index === 0) setPhotocards(data);
-          else if (index === 1) setReleases(data);
-          else if (index === 2) setIdols(data);
-          else if (index === 3) setArtists(data);
-        }
-      });
+      await Promise.all(searchPromises);
     } catch (err) {
-      console.error("Erro na busca:", err);
-      setError("Erro ao realizar busca. Tente novamente.");
+      console.error(err);
+      setError("Erro ao realizar busca.");
     } finally {
       setLoading(false);
     }
@@ -230,6 +214,34 @@ export const SearchPage = ({ initialQuery = "" }) => {
       }
       return newFilters;
     });
+  };
+
+  const handleCardClick = async (type, id) => {
+    setModalOpen(true);
+    setModalLoading(true);
+    setIsFlippedInModal(false);
+    setModalType(type);
+    setModalData(null);
+    try {
+      const response = await fetch(`${API_URL}/search/details/${type}/${id}`);
+      const json = await response.json();
+      if (json.success) setModalData(json.data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleMouseMove = (e) => {
+    const card = e.currentTarget;
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    card.style.setProperty("--x", `${x}px`);
+    card.style.setProperty("--y", `${y}px`);
+    card.style.setProperty("--bg-x", `${(x / rect.width) * 100}%`);
+    card.style.setProperty("--bg-y", `${(y / rect.height) * 100}%`);
   };
 
   const getFilteredData = () => {
@@ -265,7 +277,6 @@ export const SearchPage = ({ initialQuery = "" }) => {
     };
   };
 
-  const isFilterActive = (filterId) => activeFilters.has(filterId);
   const {
     photocards: filteredPhotocards,
     releases: filteredReleases,
@@ -310,63 +321,40 @@ export const SearchPage = ({ initialQuery = "" }) => {
             onClick={() => setModalOpen(false)}
             className={modalOpen ? "is-open" : ""}
           ></div>
-
           <div id="info-box">
             <button id="info-box-close" onClick={() => setModalOpen(false)}>
               &times;
             </button>
-
             {modalLoading || !modalData ? (
               <div style={{ padding: "40px", textAlign: "center" }}>
                 <div className="loading-spinner"></div>
-                <p>Carregando detalhes...</p>
+                <p>Carregando...</p>
               </div>
             ) : (
               <>
                 <h2 className="modal-title">
                   {modalData.name || modalData.stage_name || "Detalhes"}
                 </h2>
-
                 <div className="modal-card-scene">
                   <div
                     className={`modal-card-inner ${
                       isFlippedInModal ? "is-flipped" : ""
                     }`}
                   >
-                    <div
-                      className="modal-card-face modal-card-front"
-                      style={{
-                        backgroundColor: "var(--theme-color)",
-                        padding: "10px",
-                      }}
-                    >
+                    <div className="modal-card-face modal-card-front">
                       <div
                         className={`card ${
                           modalType === "photocards" ? "glossy-card" : ""
                         }`}
                         style={{
                           backgroundImage: `url('${getModalImage()}')`,
-                          width: "100%",
-                          height: "100%",
                           backgroundSize: "cover",
                           backgroundPosition: "center",
                         }}
                         onMouseMove={handleMouseMove}
                       ></div>
                     </div>
-
-                    <div
-                      className="modal-card-face modal-card-back"
-                      style={{
-                        backgroundColor: "var(--theme-color)",
-                        padding: "10px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexDirection: "column",
-                        textAlign: "center",
-                      }}
-                    >
+                    <div className="modal-card-face modal-card-back">
                       {modalData.back_image ? (
                         <img
                           src={modalData.back_image}
@@ -374,8 +362,13 @@ export const SearchPage = ({ initialQuery = "" }) => {
                           className="modal-img-display"
                         />
                       ) : (
-                        // Fallback para quando não tem imagem de verso (Releases, Artists, Idols geralmente não tem)
-                        <div style={{ padding: "20px", color: "#555" }}>
+                        <div
+                          style={{
+                            padding: "20px",
+                            color: "#555",
+                            textAlign: "center",
+                          }}
+                        >
                           <h3>{modalData.name || modalData.stage_name}</h3>
                           <p style={{ fontSize: "0.9rem", marginTop: "10px" }}>
                             {modalData.description || getModalSubtitle()}
@@ -388,89 +381,21 @@ export const SearchPage = ({ initialQuery = "" }) => {
                     </div>
                   </div>
                 </div>
-
                 <div className="modal-controls">
                   <button
                     className="modal-action-btn"
                     onClick={() => setIsFlippedInModal(!isFlippedInModal)}
-                    title={isFlippedInModal ? "Ver Frente" : "Ver Verso"}
                   >
                     <span className="material-symbols-outlined">360</span>
                     {isFlippedInModal ? "Frente" : "Verso"}
                   </button>
-
                   <button
                     className="modal-action-btn secondary"
-                    onClick={() =>
-                      alert("Funcionalidade de adicionar à coleção em breve!")
-                    }
+                    onClick={() => alert("Em breve!")}
                   >
                     <span className="material-symbols-outlined">add</span>{" "}
                     Coleção
                   </button>
-                </div>
-
-                <div className="modal-info-details">
-                  {/* Renderização Condicional dos Detalhes baseada no Tipo */}
-
-                  {modalType === "photocards" && (
-                    <>
-                      <div className="info-row">
-                        <span className="label">Grupo/Artista:</span>
-                        <span className="value">
-                          {modalData.artist_name || modalData.group || "N/A"}
-                        </span>
-                      </div>
-                      <div className="info-row">
-                        <span className="label">Idol:</span>
-                        <span className="value">
-                          {modalData.idol || modalData.stage_name || "N/A"}
-                        </span>
-                      </div>
-                      <div className="info-row">
-                        <span className="label">Era/Album:</span>
-                        <span className="value">
-                          {modalData.album_name || "N/A"}
-                        </span>
-                      </div>
-                    </>
-                  )}
-
-                  {modalType === "releases" && (
-                    <>
-                      <div className="info-row">
-                        <span className="label">Artista:</span>
-                        <span className="value">{modalData.artist_name}</span>
-                      </div>
-                      <div className="info-row">
-                        <span className="label">Data:</span>
-                        <span className="value">
-                          {modalData.release_date || "N/A"}
-                        </span>
-                      </div>
-                      <div className="info-row">
-                        <span className="label">Tipo:</span>
-                        <span className="value">
-                          {modalData.type || "Album"}
-                        </span>
-                      </div>
-                    </>
-                  )}
-
-                  {(modalType === "idols" || modalType === "artists") && (
-                    <>
-                      <div className="info-row">
-                        <span className="label">Nome:</span>
-                        <span className="value">{modalData.name}</span>
-                      </div>
-                      <div className="info-row">
-                        <span className="label">Categoria:</span>
-                        <span className="value">
-                          {modalData.category || "K-Pop"}
-                        </span>
-                      </div>
-                    </>
-                  )}
                 </div>
               </>
             )}
@@ -483,7 +408,7 @@ export const SearchPage = ({ initialQuery = "" }) => {
         <input
           type="text"
           className="search-bar__input"
-          placeholder="Pesquisar photocards, releases, idols, artistas..."
+          placeholder="Pesquisar..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -491,39 +416,27 @@ export const SearchPage = ({ initialQuery = "" }) => {
           <button
             className="search-bar__clear-btn"
             onClick={() => setSearchQuery("")}
-            style={{
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: "0 1rem",
-              color: "var(--color-text-muted)",
-              display: "flex",
-              alignItems: "center",
-            }}
           >
             <X size={18} />
           </button>
         )}
       </div>
+
       {error && (
         <div
           className="error-message"
-          style={{
-            color: "#ef4444",
-            textAlign: "center",
-            padding: "1rem",
-            margin: "1rem 0",
-          }}
+          style={{ color: "#ef4444", textAlign: "center", margin: "1rem" }}
         >
           {error}
         </div>
       )}
+
       <div className="search-filters">
         {FILTERS.map((filter) => (
           <button
             key={filter.id}
             className={`btn ${
-              isFilterActive(filter.id) ? "btn-primary" : "btn-secondary"
+              activeFilters.has(filter.id) ? "btn-primary" : "btn-secondary"
             }`}
             onClick={() => handleFilterClick(filter.id)}
           >
@@ -532,6 +445,7 @@ export const SearchPage = ({ initialQuery = "" }) => {
           </button>
         ))}
       </div>
+
       {loading && (
         <div
           style={{
@@ -541,9 +455,10 @@ export const SearchPage = ({ initialQuery = "" }) => {
           }}
         >
           <div className="loading-spinner"></div>
-          <p>Buscando...</p>
+          <p>Carregando...</p>
         </div>
       )}
+
       {showNoResults && (
         <div
           style={{
@@ -553,8 +468,7 @@ export const SearchPage = ({ initialQuery = "" }) => {
           }}
         >
           <Search size={48} style={{ marginBottom: "1rem", opacity: 0.5 }} />
-          <h3>Nenhum resultado encontrado para "{searchQuery}"</h3>
-          <p>Tente termos diferentes ou remova os filtros.</p>
+          <h3>Nenhum resultado para "{searchQuery}"</h3>
         </div>
       )}
 
@@ -591,13 +505,11 @@ export const SearchPage = ({ initialQuery = "" }) => {
                     </span>
                   )}
                   {pc.front_finish && (
-                    <div className="photocard-tooltip-wrapper">
-                      <span
-                        className={`photocard-card__type-badge type-${pc.front_finish.toLowerCase()}`}
-                      >
-                        {pc.front_finish}
-                      </span>
-                    </div>
+                    <span
+                      className={`photocard-card__type-badge type-${pc.front_finish.toLowerCase()}`}
+                    >
+                      {pc.front_finish}
+                    </span>
                   )}
                 </div>
               </div>
@@ -622,6 +534,7 @@ export const SearchPage = ({ initialQuery = "" }) => {
           </div>
         </div>
       )}
+
       {!loading && filteredIdols.length > 0 && (
         <div className="search-section">
           <h2 className="search-section__title">Idols</h2>
@@ -647,6 +560,7 @@ export const SearchPage = ({ initialQuery = "" }) => {
           </div>
         </div>
       )}
+
       {!loading && filteredArtists.length > 0 && (
         <div className="search-section">
           <h2 className="search-section__title">Artistas/Grupos</h2>
