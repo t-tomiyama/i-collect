@@ -47,10 +47,10 @@
 }
 
 .gom-bg {
-  background: linear-gradient(135deg, #fbbf24, #d97706);
+  background: var(--theme-primary);
 }
 .col-bg {
-  background: linear-gradient(135deg, #a78bfa, #7c3aed);
+  background: var(--theme-primary);
 }
 
 /* Lista */
