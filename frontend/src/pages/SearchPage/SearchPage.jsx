@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Search, Music, Users, Package, User, X } from "lucide-react";
+import {
+  Search,
+  Music,
+  Users,
+  Package,
+  User,
+  X,
+  Disc,
+  ShoppingBag,
+  Info,
+} from "lucide-react";
 import "./SearchPage.css";
 
 const API_URL = "https://i-collect-backend.onrender.com/api";
@@ -14,11 +24,8 @@ const FILTERS = [
 const SECTION_TO_FILTER_MAP = {
   pcs: "photocards",
   photocards: "photocards",
-
   releases: "releases",
-
   artists: "artists",
-
   idols: "idols",
 };
 
@@ -50,7 +57,6 @@ const ReleaseCard = ({ title, artist, coverUrl, onClick }) => {
 };
 
 export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
-  // Pega o filtro alvo baseado no ID recebido
   const targetSection = SECTION_TO_FILTER_MAP[initialSection];
 
   const [activeFilters, setActiveFilters] = useState(new Set());
@@ -63,6 +69,7 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
   const [idols, setIdols] = useState([]);
   const [artists, setArtists] = useState([]);
 
+  // Modal states
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState("");
   const [modalData, setModalData] = useState(null);
@@ -79,7 +86,6 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
     const newFilters = new Set();
     if (targetSection) {
       newFilters.add(targetSection);
-
       if (targetSection === "artists") {
         newFilters.add("idols");
       }
@@ -124,7 +130,6 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
         );
       }
 
-      // Seção Idols OU Seção Artists (mostra idols também)
       if (
         !targetSection ||
         targetSection === "idols" ||
@@ -167,7 +172,6 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
 
     try {
       const searchPromises = [];
-
       const isPcsActive =
         activeFilters.size === 0 || activeFilters.has("photocards");
       const isRelActive =
@@ -242,6 +246,7 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
     setModalType(type);
     setModalData(null);
     try {
+      // O backend agora aceita plural ("photocards") corretamente
       const response = await fetch(`${API_URL}/search/details/${type}/${id}`);
       const json = await response.json();
       if (json.success) setModalData(json.data);
@@ -319,16 +324,68 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
     return modalData.image;
   };
 
-  const getModalSubtitle = () => {
-    if (!modalData) return "";
-    if (modalType === "photocards")
-      return `${modalData.group || modalData.artist_name} | ${
-        modalData.idol || modalData.stage_name
-      }`;
-    if (modalType === "releases") return modalData.artist_name;
-    if (modalType === "idols") return modalData.artist_name || modalData.group;
-    if (modalType === "artists") return modalData.category;
-    return "";
+  // Função para renderizar os detalhes ricos no verso do card
+  const renderModalDetails = () => {
+    if (!modalData) return null;
+
+    // Se for Photocard, tentamos mostrar os campos específicos (Album, Set, Loja)
+    if (modalType === "photocards") {
+      return (
+        <div className="modal-info-content">
+          <h3 className="modal-info-title">
+            {modalData.name || modalData.stage_name}
+          </h3>
+
+          <div className="modal-metadata-list">
+            {modalData.artist_name && (
+              <div className="meta-row">
+                <Users size={16} className="meta-icon" />
+                <span>{modalData.artist_name}</span>
+              </div>
+            )}
+            {modalData.release_name && (
+              <div className="meta-row">
+                <Disc size={16} className="meta-icon" />
+                <span>{modalData.release_name}</span>
+              </div>
+            )}
+            {modalData.set_name && (
+              <div className="meta-row">
+                <Package size={16} className="meta-icon" />
+                <span>{modalData.set_name}</span>
+              </div>
+            )}
+            {modalData.store_name && (
+              <div className="meta-row">
+                <ShoppingBag size={16} className="meta-icon" />
+                <span>{modalData.store_name}</span>
+              </div>
+            )}
+            {/* Fallback caso não tenha dados ricos, mostra description montada pelo backend */}
+            {!modalData.release_name &&
+              !modalData.set_name &&
+              modalData.description && (
+                <div className="meta-row description-fallback">
+                  <Info size={16} className="meta-icon" />
+                  <span>{modalData.description}</span>
+                </div>
+              )}
+          </div>
+        </div>
+      );
+    }
+
+    // Padrão para outros tipos
+    return (
+      <div className="modal-info-content">
+        <h3 className="modal-info-title">
+          {modalData.name || modalData.stage_name}
+        </h3>
+        <p>
+          {modalData.artist_name || modalData.category || modalData.description}
+        </p>
+      </div>
+    );
   };
 
   return (
@@ -360,6 +417,7 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
                       isFlippedInModal ? "is-flipped" : ""
                     }`}
                   >
+                    {/* FRENTE DO CARD NO MODAL */}
                     <div className="modal-card-face modal-card-front">
                       <div
                         className={`card ${
@@ -373,6 +431,8 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
                         onMouseMove={handleMouseMove}
                       ></div>
                     </div>
+
+                    {/* VERSO DO CARD NO MODAL */}
                     <div className="modal-card-face modal-card-back">
                       {modalData.back_image ? (
                         <img
@@ -381,20 +441,8 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
                           className="modal-img-display"
                         />
                       ) : (
-                        <div
-                          style={{
-                            padding: "20px",
-                            color: "#555",
-                            textAlign: "center",
-                          }}
-                        >
-                          <h3>{modalData.name || modalData.stage_name}</h3>
-                          <p style={{ fontSize: "0.9rem", marginTop: "10px" }}>
-                            {modalData.description || getModalSubtitle()}
-                          </p>
-                          <div style={{ marginTop: "20px", opacity: 0.5 }}>
-                            <Music size={32} />
-                          </div>
+                        <div className="modal-back-placeholder">
+                          {renderModalDetails()}
                         </div>
                       )}
                     </div>
@@ -410,7 +458,11 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
                   </button>
                   <button
                     className="modal-action-btn secondary"
-                    onClick={() => alert("Em breve!")}
+                    onClick={() =>
+                      alert(
+                        `Adicionar ID ${modalData.id} à wishlist? (Backend pronto)`
+                      )
+                    }
                   >
                     <span className="material-symbols-outlined">add</span>{" "}
                     Coleção
@@ -422,6 +474,7 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
         </>
       )}
 
+      {/* SEARCH BAR E FILTROS */}
       <div className="search-bar-wrapper">
         <Search className="search-bar__icon" size={20} />
         <input
@@ -491,6 +544,7 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
         </div>
       )}
 
+      {/* GRID DE RESULTADOS */}
       {!loading && filteredPhotocards.length > 0 && (
         <div className="search-section">
           <h2 className="search-section__title">Photocards</h2>

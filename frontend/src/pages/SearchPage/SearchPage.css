@@ -113,7 +113,6 @@
   box-shadow: 0 4px 12px var(--theme-shadow-color);
 }
 
-/* --- Seções e Grids --- */
 .search-section__title {
   font-size: 1.5rem;
   font-weight: 700;
@@ -121,7 +120,6 @@
   margin-bottom: 1.25rem;
 }
 
-/* --- Grids Proporcionais --- */
 .photocard-grid,
 .release-grid,
 .idol-grid,
@@ -131,7 +129,6 @@
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
 }
 
-/* --- ESTILO BASE DO CARD (Uniforme com o Dashboard) --- */
 .photocard-card,
 .release-card,
 .idol-card,
@@ -159,7 +156,6 @@
   background-color: var(--color-surface-2);
 }
 
-/* --- 1. Photocard Card (Com tag e tooltip) --- */
 .photocard-card {
   display: flex;
   flex-direction: column;
@@ -170,9 +166,9 @@
 .photocard-card__image-wrapper {
   position: relative;
   width: 100%;
-  aspect-ratio: 3 / 4.2;
+  aspect-ratio: 5.5/ 8.5;
   background-color: var(--color-surface-2);
-  border-radius: 1.5rem;
+  border-radius: 0.8rem;
   overflow: hidden;
 }
 
@@ -182,7 +178,6 @@
   object-fit: cover;
 }
 
-/* --- MUDANÇA: .photocard-card__info --- */
 .photocard-card__info {
   /* Centraliza e empilha o nome e a tag */
   display: flex;
