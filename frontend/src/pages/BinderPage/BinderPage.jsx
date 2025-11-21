@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BookOpen, Search, Plus, Check, AlertCircle } from "lucide-react";
-import { bindersAPI } from "./api";
+import { bindersAPI } from "../../services/api";
 import "./BinderPage.css";
 
 const USER_SESSION = {
