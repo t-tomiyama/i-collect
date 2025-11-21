@@ -858,9 +858,9 @@ function Dashboard({ onLogout, user }) {
     const path = location.pathname;
     if (path === "/" || path === "/dashboard") return "home";
     if (path === "/searchpage") return "search";
-    if (path === "/section/artists") return "search";
-    if (path === "/section/releases") return "search";
-    if (path === "/section/pcs") return "search";
+    if (path === "/section/artists") return "search-artist";
+    if (path === "/section/releases") return "search-releases";
+    if (path === "/section/pcs") return "search-pcs";
     if (path === "/binders") return "col-binders-list";
     if (path === "/binders" || path.startsWith("/binders/"))
       return "my-binders";
@@ -909,6 +909,9 @@ function Dashboard({ onLogout, user }) {
 
     switch (itemId) {
       case "search":
+        navigate("/searchpage");
+        break;
+      case "search-artists":
         navigate("/searchpage");
         break;
       case "col-binders-list":

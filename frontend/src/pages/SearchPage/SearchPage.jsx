@@ -358,7 +358,7 @@ export const SearchPage = ({ initialQuery = "" }) => {
                     <div
                       className="modal-card-face modal-card-back"
                       style={{
-                        backgroundColor: "#fff",
+                        backgroundColor: "var(--theme-color)",
                         padding: "10px",
                         display: "flex",
                         alignItems: "center",
