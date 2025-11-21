@@ -619,10 +619,6 @@ const DashboardHome = ({
           </div>
         )}
 
-        {/* ==========================================================
-          SEÇÃO DE RATINGS (TOP 5 GOMs e COLLECTORS)
-          ==========================================================
-        */}
         {user && (
           <RatingSection
             topGoms={ratings?.topGoms}
