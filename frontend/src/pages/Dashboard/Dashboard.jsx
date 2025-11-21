@@ -970,16 +970,16 @@ function Dashboard({ onLogout, user }) {
     switch (activeNav) {
       case "search":
         if (path === "/searchpage" || path.includes("searchpage")) {
-          return <SearchPage />;
+          return <SearchPage initialFilter="" />;
         }
-      case "cat-artists":
-        return <SearchPage initialFilter="cat-artists" />;
+      case "artists":
+        return <SearchPage initialFilter="artists" />;
 
-      case "cat-albums":
-        return <SearchPage initialFilter="cat-albums" />;
+      case "albums":
+        return <SearchPage initialFilter="albums" />;
 
-      case "cat-pcs":
-        return <SearchPage initialFilter="cat-pcs" />;
+      case "pcs":
+        return <SearchPage initialFilter="pcs" />;
     }
 
     if (path === "/binders" || path.startsWith("/binders/")) {

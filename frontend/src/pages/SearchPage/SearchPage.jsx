@@ -11,6 +11,12 @@ const FILTERS = [
   { id: "artists", name: "Artistas/Grupos", icon: Users },
 ];
 
+const SIDEBAR_TO_FILTER_MAP = {
+  pcs: "photocards",
+  albums: "releases",
+  artists: "artists",
+};
+
 const ReleaseCard = ({ title, artist, coverUrl, onClick }) => {
   return (
     <div
@@ -61,13 +67,11 @@ export const SearchPage = ({ initialQuery = "" }) => {
     }
   }, [initialQuery]);
 
-  // Efeito para bloquear o scroll e escurecer o fundo (Igual BinderPage)
   useEffect(() => {
     if (modalOpen) document.body.classList.add("info-visible");
     else document.body.classList.remove("info-visible");
   }, [modalOpen]);
 
-  // Buscar dados iniciais
   useEffect(() => {
     fetchInitialData();
   }, []);
@@ -301,7 +305,6 @@ export const SearchPage = ({ initialQuery = "" }) => {
 
   return (
     <div className="search-page-container">
-      {/* --- MODAL ESTILO BINDER PAGE --- */}
       {modalOpen && (
         <>
           <div
@@ -332,18 +335,17 @@ export const SearchPage = ({ initialQuery = "" }) => {
                       isFlippedInModal ? "is-flipped" : ""
                     }`}
                   >
-                    {/* FRENTE DO CARD */}
                     <div
                       className="modal-card-face modal-card-front"
                       style={{
-                        backgroundColor: "#fff", // Default white, já que na busca não temos "sleeveColor"
+                        backgroundColor: "var(--theme-color)",
                         padding: "10px",
                       }}
                     >
                       <div
                         className={`card ${
                           modalType === "photocards" ? "glossy-card" : ""
-                        }`} // Adiciona efeito glossy se for photocard
+                        }`}
                         style={{
                           backgroundImage: `url('${getModalImage()}')`,
                           width: "100%",
@@ -352,12 +354,9 @@ export const SearchPage = ({ initialQuery = "" }) => {
                           backgroundPosition: "center",
                         }}
                         onMouseMove={handleMouseMove}
-                      >
-                        {/* Se quiser adicionar lógica de lenticular aqui, pode, mas a API precisaria retornar img2 */}
-                      </div>
+                      ></div>
                     </div>
 
-                    {/* VERSO DO CARD */}
                     <div
                       className="modal-card-face modal-card-back"
                       style={{
