@@ -13,15 +13,11 @@ const FILTERS = [
 
 const SECTION_TO_FILTER_MAP = {
   pcs: "photocards",
-  "cat-pcs": "photocards",
   photocards: "photocards",
 
-  albums: "releases",
-  "cat-albums": "releases",
   releases: "releases",
 
   artists: "artists",
-  "cat-artists": "artists",
 
   idols: "idols",
 };

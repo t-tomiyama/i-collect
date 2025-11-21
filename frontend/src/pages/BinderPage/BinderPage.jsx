@@ -1,112 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { BookOpen, Search, Heart, Plus, Check } from "lucide-react";
-
+import { BookOpen, Search, Plus, Check, AlertCircle } from "lucide-react";
+import { bindersAPI } from "./api";
 import "./BinderPage.css";
 
-const INITIAL_CARDS = [
-  [
-    {
-      id: 1,
-      type: "lenticular-card",
-      img1: "https://i.pinimg.com/1200x/82/8c/2e/828c2e0ede20f8e99c1c33b2dc25085d.jpg",
-      img2: "https://i.pinimg.com/736x/d0/18/f9/d018f957f6cf4c2f700fcaeef70f39b3.jpg",
-      backImg:
-        "https://i.pinimg.com/564x/e1/9d/05/e19d05320d351b40215443899e58737a.jpg",
-      sleeveColor: "#ffffff",
-      status: "have",
-      name: "Oddinary Lenticular",
-      group: "Stray Kids",
-      idol: "Hyunjin",
-    },
-    {
-      id: 2,
-      type: "glossy-card",
-      img1: "https://i.pinimg.com/736x/13/b9/72/13b9728245ced939356886aa5a900755.jpg",
-      backImg:
-        "https://i.pinimg.com/564x/c9/1c/19/c91c1995369f7c21b728402b24eba2af.jpg",
-      sleeveColor: "#A7D9FD",
-      status: "on-the-way-inter",
-      name: "Taste of Love POB",
-      group: "Twice",
-      idol: "Mina",
-    },
-    {
-      id: 3,
-      type: "matte-card",
-      img1: "https://i.pinimg.com/736x/7e/d3/f6/7ed3f63e730b6bc2e73225b3ef233498.jpg",
-      sleeveColor: "#B5EAD7",
-      status: "have",
-      name: "Fact Check Glitter",
-      group: "NCT",
-      idol: "Taeyong",
-    },
-    null,
-    null,
-    null,
-    {
-      id: 4,
-      type: "holographic-star",
-      img1: "https://i.pinimg.com/736x/9d/c3/a1/9dc3a1d892d9cab0b0fb5b4b5b05a8a2.jpg",
-      sleeveColor: "#FFECB3",
-      status: "for-sale",
-      name: "MAXIDENT Holo",
-      group: "Stray Kids",
-      idol: "Felix",
-    },
-    null,
-    null,
-  ],
-  [
-    {
-      id: 5,
-      type: "holographic-crystal",
-      img1: "https://i.pinimg.com/736x/c9/1c/19/c91c1995369f7c21b728402b24eba2af.jpg",
-      sleeveColor: "#E0BBE4",
-      status: "wishlist",
-      name: "Ready to Be Crystal",
-      group: "Twice",
-      idol: "Sana",
-    },
-    null,
-    null,
-    {
-      id: 6,
-      type: "matte-card",
-      img1: "https://i.pinimg.com/736x/3d/6d/2d/3d6d2d937d4030d06e4cb3a26d33a6d8.jpg",
-      sleeveColor: "#FFC09F",
-      status: "on-progress",
-      name: "Blue Card",
-      group: "Twice",
-      idol: "Jihyo",
-    },
-    null,
-    null,
-    null,
-    null,
-    null,
-  ],
-  [
-    null,
-    {
-      id: 7,
-      type: "glossy-card",
-      img1: "https://placehold.co/250x350/FF8CCA/FFF?text=New",
-      sleeveColor: "#ffffff",
-      status: "have",
-      name: "Placeholder Card",
-      group: "Twice",
-      idol: "Nayeon",
-    },
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-  ],
-  Array(9).fill(null),
-];
+const USER_SESSION = {
+  isGuest: false,
+  username: "usuario_teste",
+  socialMediaId: 1,
+};
 
 const MOCK_SEARCH_CARDS = [
   {
@@ -166,6 +67,45 @@ const MOCK_SEARCH_CARDS = [
   },
 ];
 
+const INITIAL_CARDS_MOCK = [
+  [
+    {
+      id: 1,
+      type: "lenticular-card",
+      img1: "https://i.pinimg.com/1200x/82/8c/2e/828c2e0ede20f8e99c1c33b2dc25085d.jpg",
+      img2: "https://i.pinimg.com/736x/d0/18/f9/d018f957f6cf4c2f700fcaeef70f39b3.jpg",
+      backImg:
+        "https://i.pinimg.com/564x/e1/9d/05/e19d05320d351b40215443899e58737a.jpg",
+      sleeveColor: "#ffffff",
+      status: "have",
+      name: "Oddinary Lenticular",
+      group: "Stray Kids",
+      idol: "Hyunjin",
+    },
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+  ],
+  Array(9).fill(null),
+  Array(9).fill(null),
+  Array(9).fill(null),
+];
+
+const BINDERS_DATA_MOCK = [
+  {
+    id: 1,
+    title: "Minha Coleção (Demo)",
+    theme: "theme-pink",
+    rows: 3,
+    cols: 3,
+  },
+];
+
 const ALL_GROUPS = [
   ...new Set(MOCK_SEARCH_CARDS.map((card) => card.group)),
 ].sort();
@@ -175,16 +115,6 @@ const ALL_IDOLS = [
 const ALL_TYPES = [
   ...new Set(MOCK_SEARCH_CARDS.map((card) => card.type)),
 ].sort();
-
-const BINDERS_DATA = [
-  {
-    id: 1,
-    title: "Minha coleção de cards",
-    theme: "theme-pink",
-    rows: 3,
-    cols: 3,
-  },
-];
 
 const STATUS_TO_ICON = {
   have: "family_home",
@@ -304,9 +234,9 @@ const CardConfigModal = ({
   const [selectedIdol, setSelectedIdol] = useState("");
   const [selectedType, setSelectedType] = useState("");
   const [selectedCardId, setSelectedCardId] = useState(null);
-
   const [tempCardStatus, setTempCardStatus] = useState("have");
   const [tempSleeveColor, setTempSleeveColor] = useState("#ffffff");
+
   const currentCard = isEditing
     ? cardToEdit
     : mockSearchCards.find((card) => card.id === selectedCardId);
@@ -354,7 +284,6 @@ const CardConfigModal = ({
 
   const handleConfirmAction = () => {
     if (!currentCard) return;
-
     const cardData = {
       ...currentCard,
       sleeveColor: tempSleeveColor,
@@ -404,14 +333,7 @@ const CardConfigModal = ({
                   onChange={(e) => setSelectedIdol(e.target.value)}
                 >
                   <option value="">Idol (Todos)</option>
-                  {ALL_IDOLS.filter(
-                    (idol) =>
-                      !selectedGroup ||
-                      mockSearchCards.some(
-                        (card) =>
-                          card.idol === idol && card.group === selectedGroup
-                      )
-                  ).map((idol) => (
+                  {ALL_IDOLS.map((idol) => (
                     <option key={idol} value={idol}>
                       {idol}
                     </option>
@@ -442,9 +364,7 @@ const CardConfigModal = ({
                       <div className="result-img-wrapper">
                         <div
                           className={`card ${card.type}`}
-                          style={{
-                            backgroundImage: `url('${card.img1}')`,
-                          }}
+                          style={{ backgroundImage: `url('${card.img1}')` }}
                         ></div>
                       </div>
                       <div className="result-info">
@@ -473,25 +393,9 @@ const CardConfigModal = ({
                 >
                   <div
                     className={`card ${currentCard.type}`}
-                    style={{
-                      backgroundImage: `url('${currentCard.img1}')`,
-                    }}
+                    style={{ backgroundImage: `url('${currentCard.img1}')` }}
                     onMouseMove={handleMouseMove}
-                  >
-                    {currentCard.type === "lenticular-card" &&
-                      currentCard.img2 && (
-                        <>
-                          <div
-                            className="lenticular-fg"
-                            style={{
-                              backgroundImage: `url('${currentCard.img2}')`,
-                            }}
-                          ></div>
-                          <div className="lenticular-pattern"></div>
-                          <div className="light"></div>
-                        </>
-                      )}
-                  </div>
+                  ></div>
                 </div>
               </div>
               <div className="config-options">
@@ -520,7 +424,6 @@ const CardConfigModal = ({
                         style={{ backgroundColor: swatch.color }}
                         onClick={() => setTempSleeveColor(swatch.color)}
                         title={swatch.name}
-                        aria-label={`Selecionar cor ${swatch.name}`}
                       >
                         {tempSleeveColor === swatch.color && (
                           <span className="material-symbols-outlined check-icon">
@@ -535,11 +438,6 @@ const CardConfigModal = ({
               <button
                 className="confirm-add-btn btn-primary"
                 onClick={handleConfirmAction}
-                title={
-                  isEditing
-                    ? "Salvar Alterações"
-                    : "Adicionar card selecionado ao slot"
-                }
                 disabled={!currentCard}
               >
                 <span className="material-symbols-outlined">
@@ -550,10 +448,7 @@ const CardConfigModal = ({
             </div>
           ) : (
             <div className="selected-card-details empty-state">
-              <p>
-                Selecione um card da lista para visualizar e configurar antes de
-                adicionar.
-              </p>
+              <p>Selecione um card da lista para visualizar.</p>
               <Search size={40} color="#888" />
             </div>
           )}
@@ -564,20 +459,23 @@ const CardConfigModal = ({
 };
 
 export function BinderPage() {
-  const [binders, setBinders] = useState(BINDERS_DATA);
+  const [binders, setBinders] = useState([]);
   const [selectedBinder, setSelectedBinder] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(0);
   const [labeledMode, setLabeledMode] = useState(false);
-  const [pagesData, setPagesData] = useState(INITIAL_CARDS);
+  const [pagesData, setPagesData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isNewBinderModalOpen, setIsNewBinderModalOpen] = useState(false);
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+
   const [selectedCard, setSelectedCard] = useState(null);
   const [selectedCardPosition, setSelectedCardPosition] = useState(null);
   const [dragSource, setDragSource] = useState(null);
   const [isFlippedInModal, setIsFlippedInModal] = useState(false);
   const [showLenticularAlt, setShowLenticularAlt] = useState(false);
-  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [configPosition, setConfigPosition] = useState(null);
 
   const totalPages = 4;
@@ -594,20 +492,109 @@ export function BinderPage() {
   }, [isModalOpen, isConfigModalOpen]);
 
   useEffect(() => {
-    if (selectedCard) {
-      setIsFlippedInModal(false);
-      setShowLenticularAlt(false);
-    }
-  }, [selectedCard]);
+    const fetchBinders = async () => {
+      setIsLoading(true);
+      if (USER_SESSION.isGuest) {
+        setBinders(BINDERS_DATA_MOCK);
+        setIsLoading(false);
+        return;
+      }
 
-  const openBinder = (binder) => {
+      try {
+        const data = await bindersAPI.getUserBinders(
+          USER_SESSION.username,
+          USER_SESSION.socialMediaId
+        );
+        if (Array.isArray(data)) {
+          const formattedBinders = data.map((b) => ({
+            id: b.ID,
+            title: b.NAME,
+            rows: b.ROWS,
+            cols: b.COLUMNS,
+            theme: b.COLOR?.startsWith("theme-") ? b.COLOR : "theme-gray",
+          }));
+          setBinders(formattedBinders);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchBinders();
+  }, []);
+
+  const transformBackendDataToGrid = (dbPages, rows, cols) => {
+    const totalSlotsPerPage = rows * cols;
+    const structure = Array(totalPages)
+      .fill(null)
+      .map(() => Array(totalSlotsPerPage).fill(null));
+
+    if (!dbPages) return structure;
+
+    dbPages.forEach((page) => {
+      const pageIdx = page.page_number - 1;
+      if (pageIdx >= 0 && pageIdx < totalPages && page.slots) {
+        page.slots.forEach((slot) => {
+          const linearIndex = (slot.row - 1) * cols + (slot.column - 1);
+
+          if (linearIndex >= 0 && linearIndex < totalSlotsPerPage) {
+            structure[pageIdx][linearIndex] = {
+              id: slot.photocard.id,
+              name: slot.photocard.name,
+              img1:
+                slot.photocard.front_image || "https://placehold.co/200x300",
+              backImg: slot.photocard.back_image,
+              type: "glossy-card",
+              sleeveColor: slot.sleeve_color?.hex_color || "#ffffff",
+              status: "have",
+              group: "Unknown",
+              idol: "Unknown",
+            };
+          }
+        });
+      }
+    });
+    return structure;
+  };
+
+  const openBinder = async (binder) => {
     setSelectedBinder(binder);
     setCurrentLocation(0);
+
+    if (USER_SESSION.isGuest) {
+      setPagesData(INITIAL_CARDS_MOCK);
+    } else {
+      try {
+        const data = await bindersAPI.getBinderDetails(
+          USER_SESSION.username,
+          USER_SESSION.socialMediaId,
+          binder.id
+        );
+        const transformed = transformBackendDataToGrid(
+          data.pages,
+          binder.rows,
+          binder.cols
+        );
+        setPagesData(transformed);
+      } catch (error) {
+        console.error(error);
+        setPagesData(
+          Array(totalPages)
+            .fill(null)
+            .map(() => Array(binder.rows * binder.cols).fill(null))
+        );
+      }
+    }
   };
+
   const closeBinder = () => {
     setSelectedBinder(null);
     setCurrentLocation(0);
+    setPagesData([]);
   };
+
   const goNextPage = () => {
     if (currentLocation < totalPages) setCurrentLocation((prev) => prev + 1);
   };
@@ -632,14 +619,43 @@ export function BinderPage() {
     setSelectedCard(null);
   };
 
-  const handleCreateBinder = (newBinderData) => {
-    const newBinder = {
-      id: binders.length + 1,
-      ...newBinderData,
-      rows: Number(newBinderData.rows),
-      cols: Number(newBinderData.cols),
-    };
-    setBinders([...binders, newBinder]);
+  const handleCreateBinder = async (newBinderData) => {
+    if (USER_SESSION.isGuest) {
+      const newBinder = {
+        id: binders.length + 1,
+        ...newBinderData,
+        rows: Number(newBinderData.rows),
+        cols: Number(newBinderData.cols),
+      };
+      setBinders([...binders, newBinder]);
+    } else {
+      try {
+        const payload = {
+          name: newBinderData.title,
+          rows: newBinderData.rows,
+          columns: newBinderData.cols,
+          color: newBinderData.theme,
+        };
+        const saved = await bindersAPI.createBinder(
+          USER_SESSION.username,
+          USER_SESSION.socialMediaId,
+          payload
+        );
+        setBinders([
+          ...binders,
+          {
+            id: saved.ID,
+            title: saved.NAME,
+            rows: saved.ROWS,
+            cols: saved.COLUMNS,
+            theme: saved.COLOR,
+          },
+        ]);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    setIsNewBinderModalOpen(false);
   };
 
   const handleUpdateCardInSlot = (cardData, isNewCard) => {
@@ -665,7 +681,6 @@ export function BinderPage() {
 
   const handleDeleteCard = () => {
     if (!selectedCardPosition) return;
-
     const { pageIndex, slotIndex } = selectedCardPosition;
 
     const newPagesData = pagesData.map((page, pIdx) =>
@@ -677,7 +692,6 @@ export function BinderPage() {
     setIsModalOpen(false);
     setSelectedCard(null);
     setSelectedCardPosition(null);
-    setIsDetailModalOpen(false);
   };
 
   const handleCardClick = (card, pageIndex, slotIndex) => {
@@ -692,17 +706,13 @@ export function BinderPage() {
     setDragSource({ pageIndex, slotIndex });
     e.dataTransfer.effectAllowed = "move";
     setTimeout(() => {
-      const element =
-        e.target.closest(".photocard-sleeve") ||
-        e.target.closest(".add-photocard-wrapper");
+      const element = e.target.closest(".photocard-sleeve");
       if (element) element.classList.add("dragging");
     }, 0);
   };
 
   const handleDragEnd = (e) => {
-    const element =
-      e.target.closest(".photocard-sleeve") ||
-      e.target.closest(".add-photocard-wrapper");
+    const element = e.target.closest(".photocard-sleeve");
     if (element) element.classList.remove("dragging");
     setDragSource(null);
     document
@@ -725,6 +735,7 @@ export function BinderPage() {
     if (!dragSource) return;
     const { pageIndex: srcPage, slotIndex: srcSlot } = dragSource;
     if (srcPage === targetPageIndex && srcSlot === targetSlotIndex) return;
+
     const newPagesData = [...pagesData];
     newPagesData[srcPage] = [...newPagesData[srcPage]];
     newPagesData[targetPageIndex] = [...newPagesData[targetPageIndex]];
@@ -743,8 +754,6 @@ export function BinderPage() {
     const y = e.clientY - rect.top;
     card.style.setProperty("--x", `${x}px`);
     card.style.setProperty("--y", `${y}px`);
-    card.style.setProperty("--bg-x", `${(x / rect.width) * 100}%`);
-    card.style.setProperty("--bg-y", `${(y / rect.height) * 100}%`);
   };
 
   const NewBinderModal = ({ isOpen, onClose, onCreate }) => {
@@ -762,7 +771,6 @@ export function BinderPage() {
       setRows(3);
       setCols(3);
       setSelectedTheme("theme-pink");
-      onClose();
     };
 
     return (
@@ -782,8 +790,8 @@ export function BinderPage() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
-                placeholder="Ex: Girl Groups"
                 className="form-input"
+                placeholder="Ex: Boy Groups"
               />
             </div>
             <div className="form-row">
@@ -796,7 +804,6 @@ export function BinderPage() {
                   value={rows}
                   onChange={(e) => setRows(Number(e.target.value))}
                   className="form-input"
-                  disabled
                 />
               </div>
               <div className="form-group">
@@ -808,7 +815,6 @@ export function BinderPage() {
                   value={cols}
                   onChange={(e) => setCols(Number(e.target.value))}
                   className="form-input"
-                  disabled
                 />
               </div>
             </div>
@@ -823,7 +829,6 @@ export function BinderPage() {
                     }`}
                     style={{ backgroundColor: t.color }}
                     onClick={() => setSelectedTheme(t.id)}
-                    title={t.name}
                   >
                     {selectedTheme === t.id && (
                       <Check size={16} color="white" />
@@ -845,6 +850,7 @@ export function BinderPage() {
     const rows = selectedBinder ? selectedBinder.rows || 3 : 3;
     const cols = selectedBinder ? selectedBinder.cols || 3 : 3;
     const totalSlots = rows * cols;
+
     const pageCards = pagesData[pageDataIndex] || [];
     const gridCards = Array(totalSlots)
       .fill(null)
@@ -868,7 +874,7 @@ export function BinderPage() {
           >
             {card ? (
               <div
-                className={`photocard-sleeve ${card.sleeveClass || ""}`}
+                className={`photocard-sleeve`}
                 style={{ backgroundColor: card.sleeveColor || "#fff" }}
                 draggable={true}
                 onDragStart={(e) => handleDragStart(e, pageDataIndex, idx)}
@@ -881,14 +887,10 @@ export function BinderPage() {
                   onMouseMove={handleMouseMove}
                 >
                   {card.type === "lenticular-card" && card.img2 && (
-                    <>
-                      <div
-                        className="lenticular-fg"
-                        style={{ backgroundImage: `url('${card.img2}')` }}
-                      ></div>
-                      <div className="lenticular-pattern"></div>
-                      <div className="light"></div>
-                    </>
+                    <div
+                      className="lenticular-fg"
+                      style={{ backgroundImage: `url('${card.img2}')` }}
+                    ></div>
                   )}
                 </div>
                 {card.status && (
@@ -904,13 +906,11 @@ export function BinderPage() {
               </div>
             ) : (
               <div className="add-photocard-wrapper">
-                <span>Vazio</span>
-                <span className="material-symbols-outlined">playing_cards</span>
                 <button
-                  className="photocard-add-btn "
+                  className="photocard-add-btn"
                   onClick={() => openAddCardModal(pageDataIndex, idx)}
                 >
-                  Adicionar
+                  <Plus size={20} />
                 </button>
               </div>
             )}
@@ -981,21 +981,7 @@ export function BinderPage() {
                       backgroundPosition: "center",
                     }}
                     onMouseMove={handleMouseMove}
-                  >
-                    {selectedCard.type === "lenticular-card" &&
-                      selectedCard.img2 && (
-                        <>
-                          <div
-                            className="lenticular-fg"
-                            style={{
-                              backgroundImage: `url('${selectedCard.img2}')`,
-                            }}
-                          ></div>
-                          <div className="lenticular-pattern"></div>
-                          <div className="light"></div>
-                        </>
-                      )}
-                  </div>
+                  ></div>
                 </div>
                 <div
                   className="modal-card-face modal-card-back"
@@ -1007,9 +993,9 @@ export function BinderPage() {
                   <img
                     src={
                       selectedCard.backImg ||
-                      "https://placehold.co/250x350/94A3B8/FFF?text=Verso+Genérico"
+                      "https://placehold.co/250x350/94A3B8/FFF?text=Verso"
                     }
-                    alt="Verso do Card"
+                    alt="Verso"
                     className="modal-img-display"
                   />
                 </div>
@@ -1032,73 +1018,23 @@ export function BinderPage() {
               <button
                 className="modal-action-btn"
                 onClick={() => setIsFlippedInModal(!isFlippedInModal)}
-                title={isFlippedInModal ? "Ver Frente" : "Ver Verso"}
               >
-                <span className="material-symbols-outlined">360</span>
+                <span className="material-symbols-outlined">360</span>{" "}
                 {isFlippedInModal ? "Frente" : "Verso"}
               </button>
-              {selectedCard.type === "lenticular-card" && !isFlippedInModal && (
-                <button
-                  className="modal-action-btn"
-                  onClick={() => setShowLenticularAlt(!showLenticularAlt)}
-                  title="Alternar efeito lenticular"
-                >
-                  <span className="material-symbols-outlined">animation</span>
-                  {showLenticularAlt ? "Vista A" : "Vista B"}
-                </button>
-              )}
               <button
                 className="modal-action-btn delete-btn"
                 onClick={handleDeleteCard}
-                title="Remover Card do Slot"
-                style={{
-                  backgroundColor: "#FEE2E2",
-                  borderColor: "#FCA5A5",
-                  color: "#DC2626",
-                }}
+                style={{ backgroundColor: "#FEE2E2", color: "#DC2626" }}
               >
                 <span className="material-symbols-outlined">delete</span>{" "}
                 Remover
               </button>
             </div>
-            <div className="modal-info-details">
-              <div className="info-row">
-                <span className="label">Cor da Sleeve:</span>
-                <div
-                  className="color-preview-circle"
-                  style={{
-                    backgroundColor: selectedCard.sleeveColor || "#fff",
-                  }}
-                ></div>
-              </div>
-              <div className="info-divider"></div>
-              <div className="info-row">
-                <span className="label">Grupo:</span>
-                <span className="value">{selectedCard.group || "N/A"}</span>
-              </div>
-              <div className="info-row">
-                <span className="label">Idol:</span>
-                <span className="value">{selectedCard.idol || "N/A"}</span>
-              </div>
-              <div className="info-row">
-                <span className="label">Tipo:</span>
-                <span className="value">
-                  {selectedCard.type.replace("-card", "").replace("-", " ")}
-                </span>
-              </div>
-              <div className="info-row status-row">
-                <span className="label">Status:</span>
-                <div className="status-badge">
-                  <span className="material-symbols-outlined">
-                    {STATUS_TO_ICON[selectedCard.status]}
-                  </span>
-                  <span>{STATUS_TEXT[selectedCard.status]}</span>
-                </div>
-              </div>
-            </div>
           </div>
         </>
       )}
+
       <CardConfigModal
         isOpen={isConfigModalOpen}
         onClose={closeConfigModal}
@@ -1112,59 +1048,31 @@ export function BinderPage() {
         handleMouseMove={handleMouseMove}
       />
 
-      {isDetailModalOpen && selectedCard && (
-        <div
-          className="modal-overlay is-open"
-          onClick={() => setIsDetailModalOpen(false)}
-        >
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>{selectedCard.name}</h3>
-              <button
-                className="modal-close-btn"
-                onClick={() => setIsDetailModalOpen(false)}
-              >
-                &times;
-              </button>
-            </div>
-            <div className="modal-body-centered">
-              <div
-                className="photocard-sleeve"
-                style={{
-                  width: 200,
-                  height: 280,
-                  backgroundColor: selectedCard.sleeveColor,
-                }}
-              >
-                <div
-                  className={`card ${selectedCard.type}`}
-                  style={{ backgroundImage: `url('${selectedCard.img1}')` }}
-                />
-              </div>
-              <div className="modal-actions-row">
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => {
-                    setIsDetailModalOpen(false);
-                    setIsConfigModalOpen(true);
-                  }}
-                >
-                  Editar
-                </button>
-                <button
-                  className="btn btn-primary delete-btn"
-                  onClick={handleDeleteCard}
-                >
-                  Remover
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
       {!selectedBinder && (
         <div className="view-section binder-list">
-          <h1 className="shelf-header">Meus Binders</h1>
+          <h1 className="shelf-header">
+            Meus Binders {USER_SESSION.isGuest && <small>(Visitante)</small>}
+          </h1>
+
+          {!USER_SESSION.isGuest && binders.length === 0 && !isLoading && (
+            <div className="empty-state-warning">
+              <AlertCircle
+                size={48}
+                color="#e93da1"
+                style={{ marginBottom: "1rem" }}
+              />
+              <h3>Você ainda não tem nenhum Binder!</h3>
+              <p>Crie seu primeiro binder agora para organizar sua coleção.</p>
+              <button
+                className="btn btn-primary"
+                style={{ marginTop: "1rem" }}
+                onClick={() => setIsNewBinderModalOpen(true)}
+              >
+                Criar Binder
+              </button>
+            </div>
+          )}
+
           <div className="shelf-grid">
             {binders.map((binder) => (
               <div
@@ -1194,6 +1102,7 @@ export function BinderPage() {
           </div>
         </div>
       )}
+
       {selectedBinder && (
         <div
           className="view-section binder-open-view"
@@ -1205,14 +1114,12 @@ export function BinderPage() {
             </button>
             <div id="mode-toggle">
               <button
-                id="clean-mode-btn"
                 className={!labeledMode ? "active" : ""}
                 onClick={() => setLabeledMode(false)}
               >
                 Limpo
               </button>
               <button
-                id="labeled-mode-btn"
                 className={labeledMode ? "active" : ""}
                 onClick={() => setLabeledMode(true)}
               >
@@ -1220,9 +1127,9 @@ export function BinderPage() {
               </button>
             </div>
           </div>
+
           <button
-            id="prev-page-btn"
-            className="page-nav-button"
+            className="page-nav-button prev"
             disabled={currentLocation === 0}
             onClick={goPrevPage}
           >
@@ -1231,13 +1138,13 @@ export function BinderPage() {
             </span>
           </button>
           <button
-            id="next-page-btn"
-            className="page-nav-button"
+            className="page-nav-button next"
             disabled={currentLocation === totalPages}
             onClick={goNextPage}
           >
             <span className="material-symbols-outlined">arrow_forward_ios</span>
           </button>
+
           <div className="book-container">
             <div className={bookClass} id="book">
               <div {...getPageProps(0)} id="page-0">
@@ -1261,6 +1168,7 @@ export function BinderPage() {
                   <div className="cover-border"></div>
                 </div>
               </div>
+
               {[1, 2].map((pageNum) => (
                 <div
                   key={pageNum}
@@ -1283,6 +1191,7 @@ export function BinderPage() {
                   </div>
                 </div>
               ))}
+
               <div {...getPageProps(3)} id="page-3">
                 <div className="face front cover-face page-3-front">
                   <HolePunchStrip /> <SpiralBinding />
