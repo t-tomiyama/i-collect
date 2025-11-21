@@ -25,10 +25,18 @@ import { SearchPage } from "../SearchPage/SearchPage";
 import { BinderPage } from "../BinderPage/BinderPage";
 import Payments from "../Payments/Payments";
 import DetailsModal from "../../components/DetailsModal";
+// Importação do novo componente de Rating
+import { RatingSection } from "../../components/RatingSection";
 import "../SearchPage/SearchPage.css";
 import Footer from "../../components/Footer";
 
-import { dashboardAPI, paymentsAPI, searchAPI } from "../../services/api";
+// Adicione ratingsAPI aqui
+import {
+  dashboardAPI,
+  paymentsAPI,
+  searchAPI,
+  ratingsAPI,
+} from "../../services/api";
 
 const MOCK_GUEST_DATA = {
   stats: {
@@ -38,6 +46,27 @@ const MOCK_GUEST_DATA = {
     photocardsThisWeek: 4,
     cegsArriving: 1,
     recentWishlistAdds: 2,
+  },
+  // Dados Mockados para Ratings no modo visitante
+  ratings: {
+    topGoms: [
+      {
+        user_name: "KpopStore BR",
+        community: "Stray Kids Trade",
+        rating: 10.0,
+      },
+      { user_name: "Jurin Sales", community: "XG Brasil", rating: 9.9 },
+      { user_name: "Momo Shop", community: "Twice Vendas", rating: 9.8 },
+      { user_name: "LuvDive", community: "IVE Community", rating: 9.5 },
+      { user_name: "SunnyGO", community: "General Kpop", rating: 9.2 },
+    ],
+    topCollectors: [
+      { user_name: "StayForever", rating: 10.0 },
+      { user_name: "OnceInAMillion", rating: 9.9 },
+      { user_name: "AlphazOne", rating: 9.9 },
+      { user_name: "BlinkArea", rating: 9.7 },
+      { user_name: "NCTzen2025", rating: 9.5 },
+    ],
   },
   pendingPayments: [
     {
@@ -204,6 +233,7 @@ const DashboardHome = ({
   setShowTotalAmount,
   setActiveNav,
   dashboardData,
+  ratings, // Recebendo props de ratings
   loading,
   onRefreshData,
 }) => {
@@ -444,8 +474,10 @@ const DashboardHome = ({
                 </p>
               ) : (
                 <p className="welcome-banner__subtitle">
-                  Você está no <strong>Modo Visitante</strong>. Dados mostrados
-                  abaixo são apenas para demonstração.
+                  Você está no <strong>Modo Visitante</strong>. Dados de análise
+                  e pagamentos mostrados abaixo são apenas para demonstração.
+                  Acesse o <strong>Catálogo</strong> para acessar os dados no
+                  nosso sistema.
                 </p>
               )}
 
@@ -585,6 +617,18 @@ const DashboardHome = ({
               </div>
             ))}
           </div>
+        )}
+
+        {/* ==========================================================
+          SEÇÃO DE RATINGS (TOP 5 GOMs e COLLECTORS)
+          ==========================================================
+        */}
+        {user && (
+          <RatingSection
+            topGoms={ratings?.topGoms}
+            topCollectors={ratings?.topCollectors}
+            loading={loading}
+          />
         )}
 
         {user && pendingPayments.length > 0 && (
@@ -808,6 +852,7 @@ function Dashboard({ onLogout, user }) {
   const [currentTheme, setCurrentTheme] = useState(getInitialTheme);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [dashboardData, setDashboardData] = useState({});
+  const [ratings, setRatings] = useState({ topGoms: [], topCollectors: [] }); // Estado para Ratings
   const [loading, setLoading] = useState(true);
   const [showTotalAmount, setShowTotalAmount] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState([
@@ -826,14 +871,21 @@ function Dashboard({ onLogout, user }) {
       console.log("Modo Visitante: Carregando dados Mockados...");
       setTimeout(() => {
         setDashboardData(MOCK_GUEST_DATA);
+        setRatings(MOCK_GUEST_DATA.ratings); // Carrega ratings mockados
         setLoading(false);
       }, 500);
       return;
     }
 
     try {
-      const data = await dashboardAPI.getDashboardData(user.id);
-      setDashboardData(data);
+      // Carrega Dashboard e Ratings em paralelo
+      const [dashData, rankData] = await Promise.all([
+        dashboardAPI.getDashboardData(user.id),
+        ratingsAPI.getTopRatings(),
+      ]);
+
+      setDashboardData(dashData);
+      setRatings(rankData);
     } catch (error) {
       console.error("Erro ao carregar dados do dashboard:", error);
       setDashboardData({
@@ -992,6 +1044,7 @@ function Dashboard({ onLogout, user }) {
           setShowTotalAmount={setShowTotalAmount}
           setActiveNav={handleNavClick}
           dashboardData={dashboardData}
+          ratings={ratings} // Passa os dados para o componente filho
           loading={loading}
           onRefreshData={loadDashboardData}
         />

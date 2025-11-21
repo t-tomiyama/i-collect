@@ -74,6 +74,18 @@ export const dashboardAPI = {
   },
 };
 
+export const ratingsAPI = {
+  getTopRatings: async () => {
+    try {
+      const response = await api.get("/ratings/top");
+      return response.data.data;
+    } catch (error) {
+      console.error("Erro ao buscar ratings", error);
+      return { topGoms: [], topCollectors: [] };
+    }
+  },
+};
+
 export const paymentsAPI = {
   getPendingPayments: async (userId) => {
     if (!userId) return [];
