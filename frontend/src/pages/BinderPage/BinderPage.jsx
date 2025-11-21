@@ -1049,6 +1049,7 @@ export function BinderPage({ user }) {
             </div>
           </div>
           <button
+            id="prev-page-btn"
             className="page-nav-button prev"
             disabled={currentLocation === 0}
             onClick={goPrevPage}
@@ -1058,6 +1059,7 @@ export function BinderPage({ user }) {
             </span>
           </button>
           <button
+            id="next-page-btn"
             className="page-nav-button next"
             disabled={currentLocation === totalPages}
             onClick={goNextPage}
