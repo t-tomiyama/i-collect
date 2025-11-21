@@ -9,6 +9,8 @@ import {
   Disc,
   ShoppingBag,
   Info,
+  Layers,
+  Grid,
 } from "lucide-react";
 import "./SearchPage.css";
 
@@ -69,7 +71,6 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
   const [idols, setIdols] = useState([]);
   const [artists, setArtists] = useState([]);
 
-  // Modal states
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState("");
   const [modalData, setModalData] = useState(null);
@@ -246,7 +247,6 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
     setModalType(type);
     setModalData(null);
     try {
-      // O backend agora aceita plural ("photocards") corretamente
       const response = await fetch(`${API_URL}/search/details/${type}/${id}`);
       const json = await response.json();
       if (json.success) setModalData(json.data);
@@ -324,11 +324,9 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
     return modalData.image;
   };
 
-  // Função para renderizar os detalhes ricos no verso do card
   const renderModalDetails = () => {
     if (!modalData) return null;
 
-    // Se for Photocard, tentamos mostrar os campos específicos (Album, Set, Loja)
     if (modalType === "photocards") {
       return (
         <div className="modal-info-content">
@@ -337,10 +335,10 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
           </h3>
 
           <div className="modal-metadata-list">
-            {modalData.artist_name && (
+            {modalData.group_name && (
               <div className="meta-row">
                 <Users size={16} className="meta-icon" />
-                <span>{modalData.artist_name}</span>
+                <span>{modalData.group_name}</span>
               </div>
             )}
             {modalData.release_name && (
@@ -355,13 +353,32 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
                 <span>{modalData.set_name}</span>
               </div>
             )}
+            {modalData.available_versions && (
+              <div className="meta-row">
+                <Layers size={16} className="meta-icon" />
+                <span>Versões: {modalData.available_versions}</span>
+              </div>
+            )}
             {modalData.store_name && (
               <div className="meta-row">
                 <ShoppingBag size={16} className="meta-icon" />
                 <span>{modalData.store_name}</span>
               </div>
             )}
-            {/* Fallback caso não tenha dados ricos, mostra description montada pelo backend */}
+            {modalData.other_cards_in_set && (
+              <div className="meta-row" style={{ alignItems: "flex-start" }}>
+                <Grid
+                  size={16}
+                  className="meta-icon"
+                  style={{ marginTop: "3px" }}
+                />
+                <div style={{ fontSize: "0.85rem" }}>
+                  <strong>Outros no set:</strong>
+                  <br />
+                  {modalData.other_cards_in_set}
+                </div>
+              </div>
+            )}
             {!modalData.release_name &&
               !modalData.set_name &&
               modalData.description && (
@@ -375,7 +392,6 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
       );
     }
 
-    // Padrão para outros tipos
     return (
       <div className="modal-info-content">
         <h3 className="modal-info-title">
@@ -417,7 +433,6 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
                       isFlippedInModal ? "is-flipped" : ""
                     }`}
                   >
-                    {/* FRENTE DO CARD NO MODAL */}
                     <div className="modal-card-face modal-card-front">
                       <div
                         className={`card ${
@@ -432,7 +447,6 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
                       ></div>
                     </div>
 
-                    {/* VERSO DO CARD NO MODAL */}
                     <div className="modal-card-face modal-card-back">
                       {modalData.back_image ? (
                         <img
@@ -459,9 +473,7 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
                   <button
                     className="modal-action-btn secondary"
                     onClick={() =>
-                      alert(
-                        `Adicionar ID ${modalData.id} à wishlist? (Backend pronto)`
-                      )
+                      alert(`Adicionar ID ${modalData.id} à wishlist?`)
                     }
                   >
                     <span className="material-symbols-outlined">add</span>{" "}
@@ -474,7 +486,6 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
         </>
       )}
 
-      {/* SEARCH BAR E FILTROS */}
       <div className="search-bar-wrapper">
         <Search className="search-bar__icon" size={20} />
         <input
@@ -544,7 +555,6 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
         </div>
       )}
 
-      {/* GRID DE RESULTADOS */}
       {!loading && filteredPhotocards.length > 0 && (
         <div className="search-section">
           <h2 className="search-section__title">Photocards</h2>
