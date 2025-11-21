@@ -36,6 +36,7 @@ const INITIAL_CARDS_MOCK = [
       id: 1,
       type: "lenticular-card",
       img1: "https://i.pinimg.com/1200x/82/8c/2e/828c2e0ede20f8e99c1c33b2dc25085d.jpg",
+      img2: "https://i.pinimg.com/736x/d0/18/f9/d018f957f6cf4c2f700fcaeef70f39b3.jpg",
       backImg:
         "https://i.pinimg.com/564x/e1/9d/05/e19d05320d351b40215443899e58737a.jpg",
       sleeveColor: "#ffffff",
@@ -291,7 +292,21 @@ const CardConfigModal = ({
                     className={`card ${currentCard.type}`}
                     style={{ backgroundImage: `url('${currentCard.img1}')` }}
                     onMouseMove={handleMouseMove}
-                  ></div>
+                  >
+                    {currentCard.type === "lenticular-card" &&
+                      currentCard.img2 && (
+                        <>
+                          <div
+                            className="lenticular-fg"
+                            style={{
+                              backgroundImage: `url('${currentCard.img2}')`,
+                            }}
+                          ></div>
+                          <div className="lenticular-pattern"></div>
+                          <div className="light"></div>
+                        </>
+                      )}
+                  </div>
                 </div>
               </div>
               <div className="config-options">
@@ -371,6 +386,7 @@ export function BinderPage({ user }) {
   const [configPosition, setConfigPosition] = useState(null);
   const [dragSource, setDragSource] = useState(null);
   const [isFlippedInModal, setIsFlippedInModal] = useState(false);
+  const [showLenticularAlt, setShowLenticularAlt] = useState(false);
 
   const totalPages = 4;
 
@@ -692,6 +708,8 @@ export function BinderPage({ user }) {
     const y = e.clientY - rect.top;
     card.style.setProperty("--x", `${x}px`);
     card.style.setProperty("--y", `${y}px`);
+    card.style.setProperty("--bg-x", `${(x / rect.width) * 100}%`);
+    card.style.setProperty("--bg-y", `${(y / rect.height) * 100}%`);
   };
 
   const NewBinderModal = ({ isOpen, onClose, onCreate }) => {
@@ -811,7 +829,7 @@ export function BinderPage({ user }) {
           >
             {card ? (
               <div
-                className="photocard-sleeve"
+                className={`photocard-sleeve ${card.sleeveClass || ""}`}
                 style={{ backgroundColor: card.sleeveColor || "#fff" }}
                 draggable={true}
                 onDragStart={(e) => handleDragStart(e, pageDataIndex, idx)}
@@ -822,7 +840,18 @@ export function BinderPage({ user }) {
                   className={`card ${card.type}`}
                   style={{ backgroundImage: `url('${card.img1}')` }}
                   onMouseMove={handleMouseMove}
-                ></div>
+                >
+                  {card.type === "lenticular-card" && card.img2 && (
+                    <>
+                      <div
+                        className="lenticular-fg"
+                        style={{ backgroundImage: `url('${card.img2}')` }}
+                      ></div>
+                      <div className="lenticular-pattern"></div>
+                      <div className="light"></div>
+                    </>
+                  )}
+                </div>
                 {card.status && (
                   <div
                     className="status-icon-container"
@@ -836,11 +865,13 @@ export function BinderPage({ user }) {
               </div>
             ) : (
               <div className="add-photocard-wrapper">
+                <span>Vazio</span>
+                <span className="material-symbols-outlined">playing_cards</span>
                 <button
                   className="photocard-add-btn"
                   onClick={() => openAddCardModal(pageDataIndex, idx)}
                 >
-                  <Plus size={20} />
+                  Adicionar
                 </button>
               </div>
             )}
@@ -899,14 +930,33 @@ export function BinderPage({ user }) {
                   <div
                     className={`card ${selectedCard.type}`}
                     style={{
-                      backgroundImage: `url('${selectedCard.img1}')`,
+                      backgroundImage: `url('${
+                        selectedCard.type === "lenticular-card" &&
+                        showLenticularAlt
+                          ? selectedCard.img2
+                          : selectedCard.img1
+                      }')`,
                       width: "100%",
                       height: "100%",
                       backgroundSize: "cover",
                       backgroundPosition: "center",
                     }}
                     onMouseMove={handleMouseMove}
-                  ></div>
+                  >
+                    {selectedCard.type === "lenticular-card" &&
+                      selectedCard.img2 && (
+                        <>
+                          <div
+                            className="lenticular-fg"
+                            style={{
+                              backgroundImage: `url('${selectedCard.img2}')`,
+                            }}
+                          ></div>
+                          <div className="lenticular-pattern"></div>
+                          <div className="light"></div>
+                        </>
+                      )}
+                  </div>
                 </div>
                 <div
                   className="modal-card-face modal-card-back"
@@ -947,6 +997,15 @@ export function BinderPage({ user }) {
                 <span className="material-symbols-outlined">360</span>{" "}
                 {isFlippedInModal ? "Frente" : "Verso"}
               </button>
+              {selectedCard.type === "lenticular-card" && !isFlippedInModal && (
+                <button
+                  className="modal-action-btn"
+                  onClick={() => setShowLenticularAlt(!showLenticularAlt)}
+                >
+                  <span className="material-symbols-outlined">animation</span>
+                  {showLenticularAlt ? "Vista A" : "Vista B"}
+                </button>
+              )}
               <button
                 className="modal-action-btn delete-btn"
                 onClick={handleDeleteCard}
@@ -955,6 +1014,16 @@ export function BinderPage({ user }) {
                 <span className="material-symbols-outlined">delete</span>{" "}
                 Remover
               </button>
+            </div>
+            <div className="modal-info-details">
+              <div className="info-row">
+                <span className="label">Grupo:</span>
+                <span className="value">{selectedCard.group || "N/A"}</span>
+              </div>
+              <div className="info-row">
+                <span className="label">Idol:</span>
+                <span className="value">{selectedCard.idol || "N/A"}</span>
+              </div>
             </div>
           </div>
         </>
