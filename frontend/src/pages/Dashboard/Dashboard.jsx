@@ -858,17 +858,13 @@ function Dashboard({ onLogout, user }) {
     const path = location.pathname;
     if (path === "/" || path === "/dashboard") return "home";
     if (path === "/searchpage") return "search";
-    if (path === "/artists") return "search";
-    if (path === "/releases") return "search";
-    if (path === "/pcs") return "search";
+    if (path === "/section/artists") return "search";
+    if (path === "/section/releases") return "search";
+    if (path === "/section/pcs") return "search";
     if (path === "/binders") return "col-binders-list";
     if (path === "/binders" || path.startsWith("/binders/"))
       return "my-binders";
     if (path === "/payments") return "payments";
-
-    if (path.startsWith("/section/")) {
-      return path.replace("/section/", "");
-    }
 
     return "home";
   };
