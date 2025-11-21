@@ -32,10 +32,9 @@ export const NAV_ITEMS = [
     id: "catalog",
     items: [
       { label: "Pesquisar", id: "search", icon: Search },
-      /*
       { label: "Artistas", id: "artists", icon: Music2 },
       { label: "Releases", id: "releases", icon: Disc },
-      { label: "Photocards", id: "pcs", icon: Image },*/
+      { label: "Photocards", id: "pcs", icon: Image },
     ],
   },
   {
