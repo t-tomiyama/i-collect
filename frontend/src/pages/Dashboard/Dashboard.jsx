@@ -47,7 +47,7 @@ const MOCK_GUEST_DATA = {
         "https://i.pinimg.com/736x/59/f8/0d/59f80d212b56d7b7efab33118606f35d.jpg",
       amount: 45.0,
       seller_name: "lovejurin",
-      due_date: new Date().toISOString(), // Vence hoje
+      due_date: new Date().toISOString(),
       status: "vence hoje",
       payment_type: "Item + Frete",
       ceg_name: "CEG XG",
@@ -60,7 +60,7 @@ const MOCK_GUEST_DATA = {
         "https://i.pinimg.com/736x/1a/ce/56/1ace56135e1c1d76149ab35f0bcce8c5.jpg",
       amount: 120.0,
       seller_name: "lovejurin",
-      due_date: new Date(Date.now() + 86400000 * 2).toISOString(), // +2 dias
+      due_date: new Date(Date.now() + 86400000 * 2).toISOString(),
       status: "pendente",
       payment_type: "Item",
       ceg_name: "CEG XG Mascara",
@@ -73,7 +73,7 @@ const MOCK_GUEST_DATA = {
         "https://i.pinimg.com/736x/9a/45/f4/9a45f486eca3c11f9a2fe4a40fd85690.jpg",
       amount: 55.5,
       seller_name: "alphaztore",
-      due_date: new Date(Date.now() - 86400000).toISOString(), // -1 dia (atrasado)
+      due_date: new Date(Date.now() - 86400000).toISOString(),
       status: "atrasado",
       payment_type: "Frete Nacional",
       ceg_name: "Envios da Maya",
@@ -212,7 +212,6 @@ const DashboardHome = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
 
-  // --- NOVOS ESTADOS PARA O DETAILS MODAL ---
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [selectedItemDetails, setSelectedItemDetails] = useState(null);
   const [detailsType, setDetailsType] = useState("photocards");
@@ -225,7 +224,6 @@ const DashboardHome = ({
   } = dashboardData;
 
   const handleOpenItemDetails = async (type, id) => {
-    // Se for mock guest, não tenta buscar na API
     if (user?.isGuest || String(id).startsWith("guest")) {
       alert("Detalhes indisponíveis no modo visitante.");
       return;
@@ -401,7 +399,6 @@ const DashboardHome = ({
         onPaymentSubmit={handlePaymentSubmit}
       />
 
-      {/* --- MODAL DE DETALHES --- */}
       <DetailsModal
         isOpen={detailsModalOpen}
         onClose={() => setDetailsModalOpen(false)}
@@ -448,9 +445,7 @@ const DashboardHome = ({
               ) : (
                 <p className="welcome-banner__subtitle">
                   Você está no <strong>Modo Visitante</strong>. Dados mostrados
-                  abaixo são apenas para demonstração. Para ver dados do nosso
-                  sistema, clique em
-                  <strong>Catálogo e no subitem Pesquisar</strong>.
+                  abaixo são apenas para demonstração.
                 </p>
               )}
 
@@ -690,13 +685,12 @@ const DashboardHome = ({
                               />
                             </td>
                             <td className="payment-schedule__cell-item">
-                              {/* --- AJUSTE: Clique para abrir detalhes --- */}
                               <div
                                 className="payment-schedule__item-wrapper clickable-item"
                                 onClick={() =>
                                   handleOpenItemDetails(
                                     "photocards",
-                                    pay.photocard_id || pay.photocard // Assume que temos o ID
+                                    pay.photocard_id || pay.photocard
                                   )
                                 }
                                 title="Clique para ver detalhes"
@@ -973,13 +967,13 @@ function Dashboard({ onLogout, user }) {
           return <SearchPage />;
         }
       case "artists":
-        return <SearchPage initialFilter="artists" />;
+        return <SearchPage initialSection="artists" />;
 
       case "releases":
-        return <SearchPage initialFilter="releases" />;
+        return <SearchPage initialSection="releases" />;
 
       case "pcs":
-        return <SearchPage initialFilter="pcs" />;
+        return <SearchPage initialSection="pcs" />;
     }
 
     if (path === "/binders" || path.startsWith("/binders/")) {

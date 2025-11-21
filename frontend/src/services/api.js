@@ -25,7 +25,6 @@ api.interceptors.request.use(
 
 export const authAPI = {
   login: async (credentials) => {
-    // Mantendo a estrutura /api/auth/login
     const response = await api.post("/api/auth/login", credentials);
     return response.data;
   },
@@ -37,6 +36,16 @@ export const authAPI = {
 
   getSocialMedias: async () => {
     const response = await api.get("/api/auth/social-medias");
+    return response.data;
+  },
+};
+
+// --- NOVO: API DE USUÁRIOS (COMUNIDADE) ---
+export const usersAPI = {
+  getCommunity: async () => {
+    // Chama a rota definida no users.js (/list)
+    // Assumindo que o users.js está montado em /api/users
+    const response = await api.get("/api/users/list");
     return response.data;
   },
 };
@@ -88,13 +97,11 @@ export const paymentsAPI = {
 
 export const bindersAPI = {
   getUserBinders: async (userId, socialMedia) => {
-    // Nota: Ajustei para receber socialMedia também, conforme sua rota backend
     if (!userId || !socialMedia) return [];
     const response = await api.get(`/api/binders/${userId}/${socialMedia}`);
     return response.data;
   },
 
-  // ADICIONE ESTA FUNÇÃO NOVA
   getBinderDetails: async (username, socialMedia, binderId) => {
     if (!username || !socialMedia || !binderId) return null;
     const response = await api.get(
@@ -110,7 +117,6 @@ export const bindersAPI = {
   },
 
   createBinder: async (username, socialMedia, binderData) => {
-    // Ajustado para passar params na URL conforme seu backend
     const response = await api.post(
       `/api/binders/${username}/${socialMedia}`,
       binderData

@@ -806,6 +806,7 @@ export function BinderPage({ user }) {
     const rows = selectedBinder ? selectedBinder.rows || 3 : 3;
     const cols = selectedBinder ? selectedBinder.cols || 3 : 3;
     const totalSlots = rows * cols;
+
     const pageCards = pagesData[pageDataIndex] || [];
     const gridCards = Array(totalSlots)
       .fill(null)
@@ -886,11 +887,18 @@ export function BinderPage({ user }) {
   }`;
   const getPageProps = (index) => {
     const isFlipped = index < currentLocation;
-    const zIndex = totalPages - Math.abs(currentLocation - index);
-
+    let zIndex;
+    let zOffset;
+    if (isFlipped) {
+      zIndex = index;
+      zOffset = index;
+    } else {
+      zIndex = totalPages - index;
+      zOffset = totalPages - index;
+    }
     return {
       className: `page ${isFlipped ? "flipped" : ""}`,
-      style: { zIndex },
+      style: { zIndex, "--z-offset": `${zOffset}px` },
     };
   };
 

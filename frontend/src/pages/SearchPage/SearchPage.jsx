@@ -69,7 +69,6 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
   const [modalLoading, setModalLoading] = useState(false);
   const [isFlippedInModal, setIsFlippedInModal] = useState(false);
 
-  // --- ALTERAÇÃO 1: Configurar filtros ativos ao carregar a seção ---
   useEffect(() => {
     setPhotocards([]);
     setReleases([]);
@@ -79,10 +78,8 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
 
     const newFilters = new Set();
     if (targetSection) {
-      // Ativa o botão correspondente à seção
       newFilters.add(targetSection);
 
-      // Regra específica: Se for Artistas, ativa Idols também
       if (targetSection === "artists") {
         newFilters.add("idols");
       }
@@ -96,7 +93,6 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
     } else {
       fetchInitialData();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialSection, searchQuery]);
 
   useEffect(() => {
@@ -111,8 +107,6 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
     try {
       const promises = [];
       const LIMIT = targetSection ? 100 : 18;
-
-      // --- ALTERAÇÃO 2: Lógica de Fetch considerando a regra Artista + Idol ---
 
       if (!targetSection || targetSection === "photocards") {
         promises.push(
