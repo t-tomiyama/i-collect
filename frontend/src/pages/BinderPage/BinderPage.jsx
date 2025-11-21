@@ -886,8 +886,8 @@ export function BinderPage({ user }) {
   }`;
   const getPageProps = (index) => {
     const isFlipped = index < currentLocation;
-    let zIndex = totalPages - index;
-    if (isFlipped) zIndex = index;
+    const zIndex = totalPages - Math.abs(currentLocation - index);
+
     return {
       className: `page ${isFlipped ? "flipped" : ""}`,
       style: { zIndex },

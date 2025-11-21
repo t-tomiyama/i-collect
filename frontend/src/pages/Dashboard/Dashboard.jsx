@@ -448,7 +448,9 @@ const DashboardHome = ({
               ) : (
                 <p className="welcome-banner__subtitle">
                   Você está no <strong>Modo Visitante</strong>. Dados mostrados
-                  abaixo são apenas para demonstração.
+                  abaixo são apenas para demonstração. Para ver dados do nosso
+                  sistema, clique em
+                  <strong>Catálogo e no subitem Pesquisar</strong>.
                 </p>
               )}
 
