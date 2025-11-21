@@ -967,8 +967,19 @@ function Dashboard({ onLogout, user }) {
   const renderContent = () => {
     const path = location.pathname;
 
-    if (path === "/searchpage" || path.includes("searchpage")) {
-      return <SearchPage />;
+    switch (activeNav) {
+      case "search":
+        if (path === "/searchpage" || path.includes("searchpage")) {
+          return <SearchPage />;
+        }
+      case "cat-artists":
+        return <SearchPage initialFilter="cat-artists" />;
+
+      case "cat-albums":
+        return <SearchPage initialFilter="cat-albums" />;
+
+      case "cat-pcs":
+        return <SearchPage initialFilter="cat-pcs" />;
     }
 
     if (path === "/binders" || path.startsWith("/binders/")) {
