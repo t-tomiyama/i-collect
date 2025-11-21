@@ -1,13 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { BookOpen, Search, Plus, Check, AlertCircle } from "lucide-react";
-import { bindersAPI } from "../../services/api";
+import api, { bindersAPI } from "../../services/api";
 import "./BinderPage.css";
-
-const USER_SESSION = {
-  isGuest: false,
-  username: "usuario_teste",
-  socialMediaId: 1,
-};
 
 const MOCK_SEARCH_CARDS = [
   {
@@ -17,7 +11,6 @@ const MOCK_SEARCH_CARDS = [
     name: "Levanter - Limited - Lenticular",
     type: "lenticular-card",
     img1: "https://i.pinimg.com/1200x/82/8c/2e/828c2e0ede20f8e99c1c33b2dc25085d.jpg",
-    img2: "https://i.pinimg.com/736x/d0/18/f9/d018f957f6cf4c2f700fcaeef70f39b3.jpg",
     backImg:
       "https://i.pinimg.com/564x/e1/9d/05/e19d05320d351b40215443899e58737a.jpg",
     sleeveColor: "#ffffff",
@@ -35,36 +28,6 @@ const MOCK_SEARCH_CARDS = [
     sleeveColor: "#A7D9FD",
     status: "wishlist",
   },
-  {
-    id: 102,
-    group: "NCT",
-    idol: "Taeyong",
-    name: "Fact Check Glitter",
-    type: "matte-card",
-    img1: "https://i.pinimg.com/736x/7e/d3/f6/7ed3f63e730b6bc2e73225b3ef233498.jpg",
-    sleeveColor: "#B5EAD7",
-    status: "for-sale",
-  },
-  {
-    id: 103,
-    group: "Stray Kids",
-    idol: "Lee Know, Han",
-    name: "Minsung Holo 2 Kids Room",
-    type: "holographic-star",
-    img1: "https://i.pinimg.com/736x/9d/c3/a1/9dc3a1d892d9cab0b0fb5b4b5b05a8a2.jpg",
-    sleeveColor: "#FFECB3",
-    status: "have",
-  },
-  {
-    id: 104,
-    group: "Zerobaseone",
-    idol: "Sung Hanbin, Zhang Hao",
-    name: "Unit Haobin - Yura Yura",
-    type: "holographic-crystal",
-    img1: "https://i.pinimg.com/736x/c9/1c/19/c91c1995369f7c21b728402b24eba2af.jpg",
-    sleeveColor: "#E0BBE4",
-    status: "on-progress",
-  },
 ];
 
 const INITIAL_CARDS_MOCK = [
@@ -73,7 +36,6 @@ const INITIAL_CARDS_MOCK = [
       id: 1,
       type: "lenticular-card",
       img1: "https://i.pinimg.com/1200x/82/8c/2e/828c2e0ede20f8e99c1c33b2dc25085d.jpg",
-      img2: "https://i.pinimg.com/736x/d0/18/f9/d018f957f6cf4c2f700fcaeef70f39b3.jpg",
       backImg:
         "https://i.pinimg.com/564x/e1/9d/05/e19d05320d351b40215443899e58737a.jpg",
       sleeveColor: "#ffffff",
@@ -98,23 +60,23 @@ const INITIAL_CARDS_MOCK = [
 
 const BINDERS_DATA_MOCK = [
   {
-    id: 1,
-    title: "Minha Coleção (Demo)",
+    id: "guest-binder-1",
+    title: "Minha Coleção (Visitante)",
     theme: "theme-pink",
     rows: 3,
     cols: 3,
   },
 ];
 
-const ALL_GROUPS = [
-  ...new Set(MOCK_SEARCH_CARDS.map((card) => card.group)),
-].sort();
-const ALL_IDOLS = [
-  ...new Set(MOCK_SEARCH_CARDS.map((card) => card.idol)),
-].sort();
-const ALL_TYPES = [
-  ...new Set(MOCK_SEARCH_CARDS.map((card) => card.type)),
-].sort();
+const MOCK_SLEEVE_COLORS = [
+  { id: 1, hex_color: "#ffffff" },
+  { id: 2, hex_color: "#A7D9FD" },
+  { id: 3, hex_color: "#B5EAD7" },
+  { id: 4, hex_color: "#FFECB3" },
+  { id: 5, hex_color: "#E0BBE4" },
+  { id: 6, hex_color: "#FFC09F" },
+  { id: 7, hex_color: "#334155" },
+];
 
 const STATUS_TO_ICON = {
   have: "family_home",
@@ -134,32 +96,19 @@ const STATUS_TEXT = {
   "for-sale": "À Venda/Troca",
 };
 
-const SLEEVE_COLORS = [
-  { color: "#ffffff", name: "Branco" },
-  { color: "#FFADAD", name: "Vermelho Pastel" },
-  { color: "#FFD6A5", name: "Laranja Pastel" },
-  { color: "#FDFFB6", name: "Amarelo Pastel" },
-  { color: "#CAFFBF", name: "Verde Pastel" },
-  { color: "#9BF6FF", name: "Ciano Pastel" },
-  { color: "#A0C4FF", name: "Azul Pastel" },
-  { color: "#BDB2FF", name: "Roxo Pastel" },
-  { color: "#FFC6FF", name: "Rosa Pastel" },
-  { color: "#222222", name: "Preto" },
-];
-
 const THEME_OPTIONS = [
-  { id: "theme-pink", color: "#e93da1", name: "Rosa" },
-  { id: "theme-lightpink", color: "#ee82e0", name: "Rosa Claro" },
-  { id: "theme-red", color: "#f43f5e", name: "Vermelho" },
-  { id: "theme-peach", color: "#fb923c", name: "Pêssego" },
-  { id: "theme-orange", color: "#f97316", name: "Laranja" },
-  { id: "theme-mint", color: "#34d399", name: "Menta" },
-  { id: "theme-teal", color: "#14b8a6", name: "Verde Mar" },
-  { id: "theme-sky", color: "#38bdf8", name: "Céu" },
-  { id: "theme-blue", color: "#0ea5e9", name: "Azul" },
-  { id: "theme-lavender", color: "#c084fc", name: "Lavanda" },
-  { id: "theme-violet", color: "#8b5cf6", name: "Violeta" },
-  { id: "theme-gray", color: "#64748b", name: "Cinza" },
+  { id: "theme-pink", color: "#e93da1" },
+  { id: "theme-lightpink", color: "#ee82e0" },
+  { id: "theme-red", color: "#f43f5e" },
+  { id: "theme-peach", color: "#fb923c" },
+  { id: "theme-orange", color: "#f97316" },
+  { id: "theme-mint", color: "#34d399" },
+  { id: "theme-teal", color: "#14b8a6" },
+  { id: "theme-sky", color: "#38bdf8" },
+  { id: "theme-blue", color: "#0ea5e9" },
+  { id: "theme-lavender", color: "#c084fc" },
+  { id: "theme-violet", color: "#8b5cf6" },
+  { id: "theme-gray", color: "#64748b" },
 ];
 
 const SpiralArc = ({ side }) => {
@@ -201,7 +150,6 @@ const SpiralBinding = () => (
     </div>
   </div>
 );
-
 const SpiralBindingBack = () => (
   <div className="spiral-binding">
     <div className="spiral-arcs">
@@ -211,7 +159,6 @@ const SpiralBindingBack = () => (
     </div>
   </div>
 );
-
 const HolePunchStrip = () => (
   <div className="hole-punch-strip">
     <div className="hole"></div>
@@ -227,15 +174,14 @@ const CardConfigModal = ({
   mockSearchCards,
   cardToEdit,
   handleMouseMove,
+  sleeveColors,
 }) => {
   const isEditing = !!cardToEdit;
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedGroup, setSelectedGroup] = useState("");
-  const [selectedIdol, setSelectedIdol] = useState("");
-  const [selectedType, setSelectedType] = useState("");
   const [selectedCardId, setSelectedCardId] = useState(null);
   const [tempCardStatus, setTempCardStatus] = useState("have");
   const [tempSleeveColor, setTempSleeveColor] = useState("#ffffff");
+  const [tempSleeveId, setTempSleeveId] = useState(null);
 
   const currentCard = isEditing
     ? cardToEdit
@@ -245,41 +191,29 @@ const CardConfigModal = ({
     if (isOpen) {
       if (isEditing) {
         setTempSleeveColor(cardToEdit.sleeveColor || "#ffffff");
+        setTempSleeveId(cardToEdit.sleeveId || null);
         setTempCardStatus(cardToEdit.status || "have");
         setSelectedCardId(null);
       } else {
-        setTempSleeveColor("#ffffff");
+        setTempSleeveColor(sleeveColors[0]?.hex_color || "#ffffff");
+        setTempSleeveId(sleeveColors[0]?.id || null);
         setTempCardStatus("have");
         setSelectedCardId(null);
       }
       setSearchTerm("");
-      setSelectedGroup("");
-      setSelectedIdol("");
-      setSelectedType("");
     }
-  }, [isOpen, isEditing, cardToEdit]);
+  }, [isOpen, isEditing, cardToEdit, sleeveColors]);
 
   const filteredCards = isEditing
     ? []
-    : mockSearchCards.filter((card) => {
-        const matchesSearch =
+    : mockSearchCards.filter(
+        (card) =>
           card.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          card.idol.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          card.group.toLowerCase().includes(searchTerm.toLowerCase());
-
-        const matchesGroup = selectedGroup
-          ? card.group === selectedGroup
-          : true;
-        const matchesIdol = selectedIdol ? card.idol === selectedIdol : true;
-        const matchesType = selectedType ? card.type === selectedType : true;
-
-        return matchesSearch && matchesGroup && matchesIdol && matchesType;
-      });
+          card.group?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
 
   const handleSelectCard = (card) => {
     setSelectedCardId(card.id);
-    setTempSleeveColor(card.sleeveColor || "#ffffff");
-    setTempCardStatus(card.status || "have");
   };
 
   const handleConfirmAction = () => {
@@ -287,6 +221,7 @@ const CardConfigModal = ({
     const cardData = {
       ...currentCard,
       sleeveColor: tempSleeveColor,
+      sleeveId: tempSleeveId,
       status: tempCardStatus,
     };
     onUpdateCard(cardData, !isEditing);
@@ -311,73 +246,34 @@ const CardConfigModal = ({
                 <Search size={18} />
                 <input
                   type="text"
-                  placeholder="Buscar por nome, idol, ou grupo..."
+                  placeholder="Buscar..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <div className="filters-row">
-                <select
-                  value={selectedGroup}
-                  onChange={(e) => setSelectedGroup(e.target.value)}
-                >
-                  <option value="">Grupo (Todos)</option>
-                  {ALL_GROUPS.map((group) => (
-                    <option key={group} value={group}>
-                      {group}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  value={selectedIdol}
-                  onChange={(e) => setSelectedIdol(e.target.value)}
-                >
-                  <option value="">Idol (Todos)</option>
-                  {ALL_IDOLS.map((idol) => (
-                    <option key={idol} value={idol}>
-                      {idol}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  value={selectedType}
-                  onChange={(e) => setSelectedType(e.target.value)}
-                >
-                  <option value="">Tipo (Todos)</option>
-                  {ALL_TYPES.map((type) => (
-                    <option key={type} value={type}>
-                      {type.replace("-card", "").replace("-", " ")}
-                    </option>
-                  ))}
-                </select>
-              </div>
               <div className="results-list">
-                {filteredCards.length > 0 ? (
-                  filteredCards.map((card) => (
-                    <div
-                      key={card.id}
-                      className={`result-item ${
-                        selectedCardId === card.id ? "selected" : ""
-                      }`}
-                      onClick={() => handleSelectCard(card)}
-                    >
-                      <div className="result-img-wrapper">
-                        <div
-                          className={`card ${card.type}`}
-                          style={{ backgroundImage: `url('${card.img1}')` }}
-                        ></div>
-                      </div>
-                      <div className="result-info">
-                        <p className="card-name">**{card.name}**</p>
-                        <p className="card-details">
-                          {card.group} | {card.idol}
-                        </p>
-                      </div>
+                {filteredCards.map((card) => (
+                  <div
+                    key={card.id}
+                    className={`result-item ${
+                      selectedCardId === card.id ? "selected" : ""
+                    }`}
+                    onClick={() => handleSelectCard(card)}
+                  >
+                    <div className="result-img-wrapper">
+                      <div
+                        className={`card ${card.type}`}
+                        style={{ backgroundImage: `url('${card.img1}')` }}
+                      ></div>
                     </div>
-                  ))
-                ) : (
-                  <p className="no-results">Nenhum card encontrado.</p>
-                )}
+                    <div className="result-info">
+                      <p className="card-name">{card.name}</p>
+                      <p className="card-details">
+                        {card.group} | {card.idol}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -415,17 +311,19 @@ const CardConfigModal = ({
                 <div className="config-group">
                   <span className="label">Cor da Sleeve:</span>
                   <div className="color-picker-container compact">
-                    {SLEEVE_COLORS.map((swatch) => (
+                    {sleeveColors.map((swatch) => (
                       <button
-                        key={swatch.color}
+                        key={swatch.id}
                         className={`color-swatch ${
-                          tempSleeveColor === swatch.color ? "active" : ""
+                          tempSleeveColor === swatch.hex_color ? "active" : ""
                         }`}
-                        style={{ backgroundColor: swatch.color }}
-                        onClick={() => setTempSleeveColor(swatch.color)}
-                        title={swatch.name}
+                        style={{ backgroundColor: swatch.hex_color }}
+                        onClick={() => {
+                          setTempSleeveColor(swatch.hex_color);
+                          setTempSleeveId(swatch.id);
+                        }}
                       >
-                        {tempSleeveColor === swatch.color && (
+                        {tempSleeveColor === swatch.hex_color && (
                           <span className="material-symbols-outlined check-icon">
                             check
                           </span>
@@ -438,18 +336,13 @@ const CardConfigModal = ({
               <button
                 className="confirm-add-btn btn-primary"
                 onClick={handleConfirmAction}
-                disabled={!currentCard}
               >
-                <span className="material-symbols-outlined">
-                  {isEditing ? "save" : "add"}
-                </span>
                 {isEditing ? "Salvar Alterações" : "Adicionar Card"}
               </button>
             </div>
           ) : (
             <div className="selected-card-details empty-state">
-              <p>Selecione um card da lista para visualizar.</p>
-              <Search size={40} color="#888" />
+              <p>Selecione um card da lista.</p>
             </div>
           )}
         </div>
@@ -458,25 +351,26 @@ const CardConfigModal = ({
   );
 };
 
-export function BinderPage() {
+export function BinderPage({ user }) {
+  const isVisitor = user?.isGuest || user?.id === "guest" || !user;
+
   const [binders, setBinders] = useState([]);
   const [selectedBinder, setSelectedBinder] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(0);
   const [labeledMode, setLabeledMode] = useState(false);
   const [pagesData, setPagesData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [sleeveColors, setSleeveColors] = useState([]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isNewBinderModalOpen, setIsNewBinderModalOpen] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
 
   const [selectedCard, setSelectedCard] = useState(null);
   const [selectedCardPosition, setSelectedCardPosition] = useState(null);
+  const [configPosition, setConfigPosition] = useState(null);
   const [dragSource, setDragSource] = useState(null);
   const [isFlippedInModal, setIsFlippedInModal] = useState(false);
-  const [showLenticularAlt, setShowLenticularAlt] = useState(false);
-  const [configPosition, setConfigPosition] = useState(null);
 
   const totalPages = 4;
 
@@ -492,38 +386,40 @@ export function BinderPage() {
   }, [isModalOpen, isConfigModalOpen]);
 
   useEffect(() => {
-    const fetchBinders = async () => {
+    const fetchData = async () => {
       setIsLoading(true);
-      if (USER_SESSION.isGuest) {
+      if (isVisitor) {
         setBinders(BINDERS_DATA_MOCK);
+        setSleeveColors(MOCK_SLEEVE_COLORS);
         setIsLoading(false);
-        return;
-      }
+      } else {
+        try {
+          const colorsRes = await api.get("/api/binders/sleeve-colors");
+          setSleeveColors(colorsRes.data);
 
-      try {
-        const data = await bindersAPI.getUserBinders(
-          USER_SESSION.username,
-          USER_SESSION.socialMediaId
-        );
-        if (Array.isArray(data)) {
-          const formattedBinders = data.map((b) => ({
-            id: b.ID,
-            title: b.NAME,
-            rows: b.ROWS,
-            cols: b.COLUMNS,
-            theme: b.COLOR?.startsWith("theme-") ? b.COLOR : "theme-gray",
-          }));
-          setBinders(formattedBinders);
+          const bindersRes = await bindersAPI.getUserBinders(
+            user.id || user.username,
+            1
+          );
+          if (Array.isArray(bindersRes)) {
+            const formattedBinders = bindersRes.map((b) => ({
+              id: b.ID,
+              title: b.NAME,
+              rows: b.ROWS,
+              cols: b.COLUMNS,
+              theme: b.COLOR?.startsWith("theme-") ? b.COLOR : "theme-pink",
+            }));
+            setBinders(formattedBinders);
+          }
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setIsLoading(false);
         }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsLoading(false);
       }
     };
-
-    fetchBinders();
-  }, []);
+    fetchData();
+  }, [user, isVisitor]);
 
   const transformBackendDataToGrid = (dbPages, rows, cols) => {
     const totalSlotsPerPage = rows * cols;
@@ -538,7 +434,6 @@ export function BinderPage() {
       if (pageIdx >= 0 && pageIdx < totalPages && page.slots) {
         page.slots.forEach((slot) => {
           const linearIndex = (slot.row - 1) * cols + (slot.column - 1);
-
           if (linearIndex >= 0 && linearIndex < totalSlotsPerPage) {
             structure[pageIdx][linearIndex] = {
               id: slot.photocard.id,
@@ -548,9 +443,8 @@ export function BinderPage() {
               backImg: slot.photocard.back_image,
               type: "glossy-card",
               sleeveColor: slot.sleeve_color?.hex_color || "#ffffff",
+              sleeveId: slot.sleeve_color?.id,
               status: "have",
-              group: "Unknown",
-              idol: "Unknown",
             };
           }
         });
@@ -563,13 +457,14 @@ export function BinderPage() {
     setSelectedBinder(binder);
     setCurrentLocation(0);
 
-    if (USER_SESSION.isGuest) {
+    if (isVisitor) {
       setPagesData(INITIAL_CARDS_MOCK);
     } else {
       try {
+        setIsLoading(true);
         const data = await bindersAPI.getBinderDetails(
-          USER_SESSION.username,
-          USER_SESSION.socialMediaId,
+          user.id || user.username,
+          1,
           binder.id
         );
         const transformed = transformBackendDataToGrid(
@@ -585,6 +480,8 @@ export function BinderPage() {
             .fill(null)
             .map(() => Array(binder.rows * binder.cols).fill(null))
         );
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -620,9 +517,9 @@ export function BinderPage() {
   };
 
   const handleCreateBinder = async (newBinderData) => {
-    if (USER_SESSION.isGuest) {
+    if (isVisitor) {
       const newBinder = {
-        id: binders.length + 1,
+        id: `guest-binder-${binders.length + 1}`,
         ...newBinderData,
         rows: Number(newBinderData.rows),
         cols: Number(newBinderData.cols),
@@ -637,8 +534,8 @@ export function BinderPage() {
           color: newBinderData.theme,
         };
         const saved = await bindersAPI.createBinder(
-          USER_SESSION.username,
-          USER_SESSION.socialMediaId,
+          user.id || user.username,
+          1,
           payload
         );
         setBinders([
@@ -658,7 +555,7 @@ export function BinderPage() {
     setIsNewBinderModalOpen(false);
   };
 
-  const handleUpdateCardInSlot = (cardData, isNewCard) => {
+  const handleUpdateCardInSlot = async (cardData, isNewCard) => {
     if (!configPosition) return;
     const { pageIndex, slotIndex } = configPosition;
 
@@ -666,20 +563,39 @@ export function BinderPage() {
       pIdx === pageIndex
         ? page.map((item, sIdx) => {
             if (sIdx === slotIndex) {
-              return {
-                ...cardData,
-                id: isNewCard ? Date.now() + Math.random() : cardData.id,
-              };
+              return { ...cardData, id: isNewCard ? Date.now() : cardData.id };
             }
             return item;
           })
         : page
     );
     setPagesData(newPagesData);
+
+    if (!isVisitor && selectedBinder) {
+      try {
+        const row = Math.floor(slotIndex / selectedBinder.cols) + 1;
+        const col = (slotIndex % selectedBinder.cols) + 1;
+        const pageNum = pageIndex + 1;
+
+        await api.put(
+          `/api/binders/${user.id || user.username}/1/${
+            selectedBinder.id
+          }/pages/${pageNum}/slots`,
+          {
+            row,
+            column: col,
+            photocard: cardData.id,
+            sleeve_color: cardData.sleeveId || 1,
+          }
+        );
+      } catch (e) {
+        console.error("Error syncing slot", e);
+      }
+    }
     closeConfigModal();
   };
 
-  const handleDeleteCard = () => {
+  const handleDeleteCard = async () => {
     if (!selectedCardPosition) return;
     const { pageIndex, slotIndex } = selectedCardPosition;
 
@@ -689,6 +605,28 @@ export function BinderPage() {
         : page
     );
     setPagesData(newPagesData);
+
+    if (!isVisitor && selectedBinder) {
+      try {
+        const row = Math.floor(slotIndex / selectedBinder.cols) + 1;
+        const col = (slotIndex % selectedBinder.cols) + 1;
+        const pageNum = pageIndex + 1;
+
+        await api.put(
+          `/api/binders/${user.id || user.username}/1/${
+            selectedBinder.id
+          }/pages/${pageNum}/slots`,
+          {
+            row,
+            column: col,
+            photocard: null,
+          }
+        );
+      } catch (e) {
+        console.error("Error deleting slot", e);
+      }
+    }
+
     setIsModalOpen(false);
     setSelectedCard(null);
     setSelectedCardPosition(null);
@@ -850,7 +788,6 @@ export function BinderPage() {
     const rows = selectedBinder ? selectedBinder.rows || 3 : 3;
     const cols = selectedBinder ? selectedBinder.cols || 3 : 3;
     const totalSlots = rows * cols;
-
     const pageCards = pagesData[pageDataIndex] || [];
     const gridCards = Array(totalSlots)
       .fill(null)
@@ -874,7 +811,7 @@ export function BinderPage() {
           >
             {card ? (
               <div
-                className={`photocard-sleeve`}
+                className="photocard-sleeve"
                 style={{ backgroundColor: card.sleeveColor || "#fff" }}
                 draggable={true}
                 onDragStart={(e) => handleDragStart(e, pageDataIndex, idx)}
@@ -885,14 +822,7 @@ export function BinderPage() {
                   className={`card ${card.type}`}
                   style={{ backgroundImage: `url('${card.img1}')` }}
                   onMouseMove={handleMouseMove}
-                >
-                  {card.type === "lenticular-card" && card.img2 && (
-                    <div
-                      className="lenticular-fg"
-                      style={{ backgroundImage: `url('${card.img2}')` }}
-                    ></div>
-                  )}
-                </div>
+                ></div>
                 {card.status && (
                   <div
                     className="status-icon-container"
@@ -969,12 +899,7 @@ export function BinderPage() {
                   <div
                     className={`card ${selectedCard.type}`}
                     style={{
-                      backgroundImage: `url('${
-                        selectedCard.type === "lenticular-card" &&
-                        showLenticularAlt
-                          ? selectedCard.img2
-                          : selectedCard.img1
-                      }')`,
+                      backgroundImage: `url('${selectedCard.img1}')`,
                       width: "100%",
                       height: "100%",
                       backgroundSize: "cover",
@@ -1046,15 +971,15 @@ export function BinderPage() {
             : null
         }
         handleMouseMove={handleMouseMove}
+        sleeveColors={sleeveColors}
       />
 
       {!selectedBinder && (
         <div className="view-section binder-list">
           <h1 className="shelf-header">
-            Meus Binders {USER_SESSION.isGuest && <small>(Visitante)</small>}
+            Meus Binders {isVisitor && <small>(Visitante)</small>}
           </h1>
-
-          {!USER_SESSION.isGuest && binders.length === 0 && !isLoading && (
+          {!isVisitor && binders.length === 0 && !isLoading && (
             <div className="empty-state-warning">
               <AlertCircle
                 size={48}
@@ -1072,7 +997,6 @@ export function BinderPage() {
               </button>
             </div>
           )}
-
           <div className="shelf-grid">
             {binders.map((binder) => (
               <div
@@ -1104,10 +1028,7 @@ export function BinderPage() {
       )}
 
       {selectedBinder && (
-        <div
-          className="view-section binder-open-view"
-          style={{ top: "0px", transition: "top 0.5s ease" }}
-        >
+        <div className="view-section binder-open-view">
           <div className="binder-controls-overlay">
             <button onClick={closeBinder} className="back-btn-simple">
               &larr; Voltar
@@ -1127,7 +1048,6 @@ export function BinderPage() {
               </button>
             </div>
           </div>
-
           <button
             className="page-nav-button prev"
             disabled={currentLocation === 0}
@@ -1144,7 +1064,6 @@ export function BinderPage() {
           >
             <span className="material-symbols-outlined">arrow_forward_ios</span>
           </button>
-
           <div className="book-container">
             <div className={bookClass} id="book">
               <div {...getPageProps(0)} id="page-0">
@@ -1168,7 +1087,6 @@ export function BinderPage() {
                   <div className="cover-border"></div>
                 </div>
               </div>
-
               {[1, 2].map((pageNum) => (
                 <div
                   key={pageNum}
@@ -1191,7 +1109,6 @@ export function BinderPage() {
                   </div>
                 </div>
               ))}
-
               <div {...getPageProps(3)} id="page-3">
                 <div className="face front cover-face page-3-front">
                   <HolePunchStrip /> <SpiralBinding />
