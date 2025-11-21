@@ -788,8 +788,6 @@ const DashboardHome = ({
   );
 };
 
-// ... (Mantenha o restante do arquivo Dashboard principal, getInitialDarkMode, etc.) ...
-
 const getInitialDarkMode = () => {
   const storedMode = localStorage.getItem("i-collect-mode");
   if (storedMode) {
@@ -823,7 +821,6 @@ function Dashboard({ onLogout, user }) {
     "sales",
   ]);
 
-  // Carregar dados do dashboard
   const loadDashboardData = async () => {
     if (!user) return;
 
@@ -861,6 +858,9 @@ function Dashboard({ onLogout, user }) {
     const path = location.pathname;
     if (path === "/" || path === "/dashboard") return "home";
     if (path === "/searchpage") return "search";
+    if (path === "/artists") return "search";
+    if (path === "/releases") return "search";
+    if (path === "/pcs") return "search";
     if (path === "/binders") return "col-binders-list";
     if (path === "/binders" || path.startsWith("/binders/"))
       return "my-binders";
@@ -970,13 +970,13 @@ function Dashboard({ onLogout, user }) {
     switch (activeNav) {
       case "search":
         if (path === "/searchpage" || path.includes("searchpage")) {
-          return <SearchPage initialFilter="" />;
+          return <SearchPage />;
         }
       case "artists":
         return <SearchPage initialFilter="artists" />;
 
-      case "albums":
-        return <SearchPage initialFilter="albums" />;
+      case "releases":
+        return <SearchPage initialFilter="releases" />;
 
       case "pcs":
         return <SearchPage initialFilter="pcs" />;

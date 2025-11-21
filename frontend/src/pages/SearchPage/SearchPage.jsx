@@ -281,7 +281,6 @@ export const SearchPage = ({ initialQuery = "" }) => {
 
   const showNoResults = searchQuery && !loading && !hasResults;
 
-  // Helper para pegar a imagem correta dependendo do tipo
   const getModalImage = () => {
     if (!modalData) return "";
     if (modalType === "photocards")
@@ -290,7 +289,6 @@ export const SearchPage = ({ initialQuery = "" }) => {
     return modalData.image;
   };
 
-  // Helper para pegar o subtítulo correto
   const getModalSubtitle = () => {
     if (!modalData) return "";
     if (modalType === "photocards")
@@ -479,7 +477,6 @@ export const SearchPage = ({ initialQuery = "" }) => {
           </div>
         </>
       )}
-      {/* --- FIM DO MODAL --- */}
 
       <div className="search-bar-wrapper">
         <Search className="search-bar__icon" size={20} />
