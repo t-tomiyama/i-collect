@@ -402,7 +402,6 @@ export const SearchPage = ({ initialQuery = "" }) => {
                     {isFlippedInModal ? "Frente" : "Verso"}
                   </button>
 
-                  {/* Botão de Adicionar (Simulado, já que é busca) */}
                   <button
                     className="modal-action-btn secondary"
                     onClick={() =>
