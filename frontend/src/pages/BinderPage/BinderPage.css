@@ -557,7 +557,6 @@ body {
   height: 480px;
   top: 10px;
   left: 0;
-  transform: translateZ(0.1px);
 }
 
 .face.back:not(.cover-face) {
@@ -575,7 +574,6 @@ body {
   height: 480px;
   top: 10px;
   left: 0;
-  transform: rotateY(180deg) translateZ(0.1px);
 }
 
 .page.flipped {
