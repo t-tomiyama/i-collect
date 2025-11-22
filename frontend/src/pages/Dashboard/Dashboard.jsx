@@ -25,7 +25,7 @@ import { SearchPage } from "../SearchPage/SearchPage";
 import { BinderPage } from "../BinderPage/BinderPage";
 import Payments from "../Payments/Payments";
 import DetailsModal from "../../components/DetailsModal";
-import { RatingSection } from "../../components/RatingSection/RatingSection"; // Certifique-se que o caminho está correto
+import { RatingSection } from "../../components/RatingSection";
 import "../SearchPage/SearchPage.css";
 import Footer from "../../components/Footer";
 
@@ -44,26 +44,6 @@ const MOCK_GUEST_DATA = {
     photocardsThisWeek: 4,
     cegsArriving: 1,
     recentWishlistAdds: 2,
-  },
-  ratings: {
-    topGoms: [
-      {
-        user_name: "KpopStore BR",
-        community: "Stray Kids Trade",
-        rating: 10.0,
-      },
-      { user_name: "Jurin Sales", community: "XG Brasil", rating: 9.9 },
-      { user_name: "Momo Shop", community: "Twice Vendas", rating: 9.8 },
-      { user_name: "LuvDive", community: "IVE Community", rating: 9.5 },
-      { user_name: "SunnyGO", community: "General Kpop", rating: 9.2 },
-    ],
-    topCollectors: [
-      { user_name: "StayForever", rating: 10.0 },
-      { user_name: "OnceInAMillion", rating: 9.9 },
-      { user_name: "AlphazOne", rating: 9.9 },
-      { user_name: "BlinkArea", rating: 9.7 },
-      { user_name: "NCTzen2025", rating: 9.5 },
-    ],
   },
   pendingPayments: [
     {
@@ -436,7 +416,6 @@ const DashboardHome = ({
           <div className="welcome-banner">
             <div className="welcome-banner__content">
               <h2 className="welcome-banner__title">
-                {/* Ajuste para exibir mensagem padrão se user for null */}
                 {!user || user.isGuest
                   ? "Bem-vindo(a), Visitante!"
                   : `Bem-vindo(a), ${
@@ -613,10 +592,6 @@ const DashboardHome = ({
           </div>
         )}
 
-        {/* ALTERAÇÃO AQUI: 
-            Removida a verificação {user && (...)} em volta da RatingSection.
-            Agora ela renderiza para todos (logados ou não).
-        */}
         <RatingSection
           topGoms={ratings?.topGoms}
           topCollectors={ratings?.topCollectors}
@@ -855,46 +830,33 @@ function Dashboard({ onLogout, user }) {
   ]);
 
   const loadDashboardData = async () => {
-    // ALTERAÇÃO AQUI: Removemos o 'if (!user) return;'
-    // para permitir que a função continue se não houver usuário.
-
     setLoading(true);
 
-    // ALTERAÇÃO AQUI: Adicionado verificação '!user'
-    if (!user || user.isGuest || user.id === "guest") {
-      console.log("Modo Visitante/Público: Carregando dados...");
-      setTimeout(() => {
-        setDashboardData(MOCK_GUEST_DATA);
-        setRatings(MOCK_GUEST_DATA.ratings);
-        setLoading(false);
-      }, 500);
-
-      // Se quiser buscar dados REAIS da API mesmo deslogado (já que é público):
-      // try {
-      //    const rankData = await ratingsAPI.getTopRatings();
-      //    setRatings(rankData);
-      // } catch (e) { ... }
-
-      return;
-    }
-
     try {
-      const [dashData, rankData] = await Promise.all([
-        dashboardAPI.getDashboardData(user.id),
-        ratingsAPI.getTopRatings(),
-      ]);
-
-      setDashboardData(dashData);
+      const rankData = await ratingsAPI.getTopRatings();
       setRatings(rankData);
     } catch (error) {
-      console.error("Erro ao carregar dados do dashboard:", error);
-      setDashboardData({
-        stats: {},
-        pendingPayments: [],
-        recentActivity: [],
-      });
-    } finally {
+      console.error("Erro ao buscar rankings:", error);
+      setRatings({ topGoms: [], topCollectors: [] });
+    }
+
+    if (!user || user.isGuest || user.id === "guest") {
+      setDashboardData(MOCK_GUEST_DATA);
       setLoading(false);
+    } else {
+      try {
+        const dashData = await dashboardAPI.getDashboardData(user.id);
+        setDashboardData(dashData);
+      } catch (error) {
+        console.error("Erro ao carregar dados do dashboard:", error);
+        setDashboardData({
+          stats: {},
+          pendingPayments: [],
+          recentActivity: [],
+        });
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
