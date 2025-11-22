@@ -13,7 +13,7 @@
 }
 
 .rating-card {
-  background: var(--bg-secondary); /* Usa as cores do tema */
+  background: var(--color-surface-1);
   border-radius: 16px;
   padding: 1.25rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
@@ -96,7 +96,7 @@
   background: linear-gradient(
     90deg,
     rgba(255, 215, 0, 0.05) 0%,
-    var(--bg-primary) 100%
+    var(--color-surface-1) 100%
   );
 }
 .pos-1 .rating-number,
