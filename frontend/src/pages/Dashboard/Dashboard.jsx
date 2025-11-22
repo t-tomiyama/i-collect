@@ -25,12 +25,10 @@ import { SearchPage } from "../SearchPage/SearchPage";
 import { BinderPage } from "../BinderPage/BinderPage";
 import Payments from "../Payments/Payments";
 import DetailsModal from "../../components/DetailsModal";
-// Importação do novo componente de Rating
-import { RatingSection } from "../../components/RatingSection";
+import { RatingSection } from "../../components/RatingSection/RatingSection"; // Certifique-se que o caminho está correto
 import "../SearchPage/SearchPage.css";
 import Footer from "../../components/Footer";
 
-// Adicione ratingsAPI aqui
 import {
   dashboardAPI,
   paymentsAPI,
@@ -47,7 +45,6 @@ const MOCK_GUEST_DATA = {
     cegsArriving: 1,
     recentWishlistAdds: 2,
   },
-  // Dados Mockados para Ratings no modo visitante
   ratings: {
     topGoms: [
       {
@@ -233,7 +230,7 @@ const DashboardHome = ({
   setShowTotalAmount,
   setActiveNav,
   dashboardData,
-  ratings, // Recebendo props de ratings
+  ratings,
   loading,
   onRefreshData,
 }) => {
@@ -247,11 +244,7 @@ const DashboardHome = ({
   const [detailsType, setDetailsType] = useState("photocards");
   const [loadingDetails, setLoadingDetails] = useState(false);
 
-  const {
-    stats = {},
-    pendingPayments = [],
-    recentActivity = [],
-  } = dashboardData;
+  const { stats = {}, pendingPayments = [] } = dashboardData;
 
   const handleOpenItemDetails = async (type, id) => {
     if (user?.isGuest || String(id).startsWith("guest")) {
@@ -443,7 +436,8 @@ const DashboardHome = ({
           <div className="welcome-banner">
             <div className="welcome-banner__content">
               <h2 className="welcome-banner__title">
-                {user?.isGuest
+                {/* Ajuste para exibir mensagem padrão se user for null */}
+                {!user || user.isGuest
                   ? "Bem-vindo(a), Visitante!"
                   : `Bem-vindo(a), ${
                       user?.user_name || user?.name || "Colecionador"
@@ -619,13 +613,15 @@ const DashboardHome = ({
           </div>
         )}
 
-        {user && (
-          <RatingSection
-            topGoms={ratings?.topGoms}
-            topCollectors={ratings?.topCollectors}
-            loading={loading}
-          />
-        )}
+        {/* ALTERAÇÃO AQUI: 
+            Removida a verificação {user && (...)} em volta da RatingSection.
+            Agora ela renderiza para todos (logados ou não).
+        */}
+        <RatingSection
+          topGoms={ratings?.topGoms}
+          topCollectors={ratings?.topCollectors}
+          loading={loading}
+        />
 
         {user && pendingPayments.length > 0 && (
           <div className="payment-schedule">
@@ -848,7 +844,7 @@ function Dashboard({ onLogout, user }) {
   const [currentTheme, setCurrentTheme] = useState(getInitialTheme);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [dashboardData, setDashboardData] = useState({});
-  const [ratings, setRatings] = useState({ topGoms: [], topCollectors: [] }); // Estado para Ratings
+  const [ratings, setRatings] = useState({ topGoms: [], topCollectors: [] });
   const [loading, setLoading] = useState(true);
   const [showTotalAmount, setShowTotalAmount] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState([
@@ -859,22 +855,30 @@ function Dashboard({ onLogout, user }) {
   ]);
 
   const loadDashboardData = async () => {
-    if (!user) return;
+    // ALTERAÇÃO AQUI: Removemos o 'if (!user) return;'
+    // para permitir que a função continue se não houver usuário.
 
     setLoading(true);
 
-    if (user.isGuest || user.id === "guest") {
-      console.log("Modo Visitante: Carregando dados Mockados...");
+    // ALTERAÇÃO AQUI: Adicionado verificação '!user'
+    if (!user || user.isGuest || user.id === "guest") {
+      console.log("Modo Visitante/Público: Carregando dados...");
       setTimeout(() => {
         setDashboardData(MOCK_GUEST_DATA);
-        setRatings(MOCK_GUEST_DATA.ratings); // Carrega ratings mockados
+        setRatings(MOCK_GUEST_DATA.ratings);
         setLoading(false);
       }, 500);
+
+      // Se quiser buscar dados REAIS da API mesmo deslogado (já que é público):
+      // try {
+      //    const rankData = await ratingsAPI.getTopRatings();
+      //    setRatings(rankData);
+      // } catch (e) { ... }
+
       return;
     }
 
     try {
-      // Carrega Dashboard e Ratings em paralelo
       const [dashData, rankData] = await Promise.all([
         dashboardAPI.getDashboardData(user.id),
         ratingsAPI.getTopRatings(),
@@ -1040,7 +1044,7 @@ function Dashboard({ onLogout, user }) {
           setShowTotalAmount={setShowTotalAmount}
           setActiveNav={handleNavClick}
           dashboardData={dashboardData}
-          ratings={ratings} // Passa os dados para o componente filho
+          ratings={ratings}
           loading={loading}
           onRefreshData={loadDashboardData}
         />

@@ -1,17 +1,18 @@
 import axios from "axios";
 
 const API_URL =
-  import.meta.env.VITE_API_URL || "https://i-collect-backend.onrender.com";
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:5000" ||
+  "https://i-collect-backend.onrender.com";
 
 const api = axios.create({
   baseURL: API_URL,
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Interceptor: Adiciona o token em TODAS as requisições se existir
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("authToken");
@@ -40,11 +41,8 @@ export const authAPI = {
   },
 };
 
-// --- NOVO: API DE USUÁRIOS (COMUNIDADE) ---
 export const usersAPI = {
   getCommunity: async () => {
-    // Chama a rota definida no users.js (/list)
-    // Assumindo que o users.js está montado em /api/users
     const response = await api.get("/api/users/list");
     return response.data;
   },
@@ -58,26 +56,12 @@ export const dashboardAPI = {
     const response = await api.get(`/api/dashboard/${userId}`);
     return response.data;
   },
-
-  getStats: async (userId) => {
-    if (!userId) return null;
-    const response = await api.get(`/api/dashboard/${userId}/stats`);
-    return response.data;
-  },
-
-  getRecentActivity: async (userId, limit = 10) => {
-    if (!userId) return [];
-    const response = await api.get(
-      `/api/dashboard/${userId}/activity?limit=${limit}`
-    );
-    return response.data;
-  },
 };
 
 export const ratingsAPI = {
   getTopRatings: async () => {
     try {
-      const response = await api.get("/ratings/top");
+      const response = await api.get("/api/ratings/top");
       return response.data.data;
     } catch (error) {
       console.error("Erro ao buscar ratings", error);
@@ -144,10 +128,7 @@ export const searchAPI = {
     return response.data;
   },
   getDetails: async (type, id) => {
-    if (!type || !id) {
-      console.error("Tipo ou ID faltando para getDetails.");
-      return null;
-    }
+    if (!type || !id) return null;
     const response = await api.get(`/api/search/details/${type}/${id}`);
     return response.data;
   },
@@ -161,17 +142,6 @@ export const collectorsAPI = {
   },
   addToWishlist: async (data) => {
     const response = await api.post("/api/wishlist/add", data);
-    return response.data;
-  },
-
-  getActiveCEGs: async (userId) => {
-    if (!userId) return [];
-    const response = await api.get(`/api/collectors/cegs/active/${userId}`);
-    return response.data;
-  },
-
-  getActiveAds: async (limit = 50) => {
-    const response = await api.get(`/api/collectors/ads/active?limit=${limit}`);
     return response.data;
   },
 };
