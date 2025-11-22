@@ -43,7 +43,19 @@ const INITIAL_CARDS_MOCK = [
       status: "have",
       name: "Oddinary Lenticular",
       group: "Stray Kids",
-      idol: "Hyunjin",
+      idol: "Lee Know",
+    },
+    {
+      id: 101,
+      group: "(G)I-DLE",
+      idol: "Minnie",
+      name: "Minnie - POB Makestar - I SWAY",
+      type: "glossy-card",
+      img1: "https://i.pinimg.com/736x/13/b9/72/13b9728245ced939356886aa5a900755.jpg",
+      backImg:
+        "https://i.pinimg.com/564x/c9/1c/19/c91c1995369f7c21b728402b24eba2af.jpg",
+      sleeveColor: "#A7D9FD",
+      status: "wishlist",
     },
     null,
     null,
@@ -52,11 +64,10 @@ const INITIAL_CARDS_MOCK = [
     null,
     null,
     null,
-    null,
   ],
-  Array(9).fill(null),
-  Array(9).fill(null),
-  Array(9).fill(null),
+  Array(9).fill(null), // Página 2 vazia
+  Array(9).fill(null), // Página 3 vazia
+  Array(9).fill(null), // Página 4 vazia
 ];
 
 const BINDERS_DATA_MOCK = [

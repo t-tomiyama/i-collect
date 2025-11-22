@@ -11,6 +11,9 @@ import {
   Info,
   Layers,
   Grid,
+  RotateCw,
+  Plus,
+  Heart,
 } from "lucide-react";
 import "./SearchPage.css";
 
@@ -71,6 +74,7 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
   const [idols, setIdols] = useState([]);
   const [artists, setArtists] = useState([]);
 
+  // Estados do Modal
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState("");
   const [modalData, setModalData] = useState(null);
@@ -106,6 +110,17 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
     if (modalOpen) document.body.classList.add("info-visible");
     else document.body.classList.remove("info-visible");
   }, [modalOpen]);
+
+  const handleMouseMove = (e) => {
+    const card = e.currentTarget;
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    card.style.setProperty("--x", `${x}px`);
+    card.style.setProperty("--y", `${y}px`);
+    card.style.setProperty("--bg-x", `${(x / rect.width) * 100}%`);
+    card.style.setProperty("--bg-y", `${(y / rect.height) * 100}%`);
+  };
 
   const fetchInitialData = async () => {
     setLoading(true);
@@ -257,17 +272,6 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
     }
   };
 
-  const handleMouseMove = (e) => {
-    const card = e.currentTarget;
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    card.style.setProperty("--x", `${x}px`);
-    card.style.setProperty("--y", `${y}px`);
-    card.style.setProperty("--bg-x", `${(x / rect.width) * 100}%`);
-    card.style.setProperty("--bg-y", `${(y / rect.height) * 100}%`);
-  };
-
   const getFilteredData = () => {
     const showAll = activeFilters.size === 0;
     const lowerQuery = searchQuery.toLowerCase();
@@ -324,79 +328,70 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
     return modalData.image;
   };
 
-  const renderModalDetails = () => {
+  const renderModalMetadata = () => {
     if (!modalData) return null;
 
     if (modalType === "photocards") {
       return (
-        <div className="modal-info-content">
-          <h3 className="modal-info-title">
-            {modalData.name || modalData.stage_name}
-          </h3>
-
-          <div className="modal-metadata-list">
-            {modalData.group_name && (
-              <div className="meta-row">
-                <Users size={16} className="meta-icon" />
-                <span>{modalData.group_name}</span>
+        <div className="modal-metadata-list">
+          {modalData.group_name && (
+            <div className="meta-row">
+              <Users size={16} className="meta-icon" />
+              <span>{modalData.group_name}</span>
+            </div>
+          )}
+          {modalData.release_name && (
+            <div className="meta-row">
+              <Disc size={16} className="meta-icon" />
+              <span>{modalData.release_name}</span>
+            </div>
+          )}
+          {modalData.set_name && (
+            <div className="meta-row">
+              <Package size={16} className="meta-icon" />
+              <span>{modalData.set_name}</span>
+            </div>
+          )}
+          {modalData.available_versions && (
+            <div className="meta-row">
+              <Layers size={16} className="meta-icon" />
+              <span>Versões: {modalData.available_versions}</span>
+            </div>
+          )}
+          {modalData.store_name && (
+            <div className="meta-row">
+              <ShoppingBag size={16} className="meta-icon" />
+              <span>{modalData.store_name}</span>
+            </div>
+          )}
+          {modalData.other_cards_in_set && (
+            <div className="meta-row" style={{ alignItems: "flex-start" }}>
+              <Grid
+                size={16}
+                className="meta-icon"
+                style={{ marginTop: "3px" }}
+              />
+              <div style={{ fontSize: "0.85rem" }}>
+                <strong>Outros no set:</strong>
+                <br />
+                {modalData.other_cards_in_set}
+              </div>
+            </div>
+          )}
+          {!modalData.release_name &&
+            !modalData.set_name &&
+            modalData.description && (
+              <div className="meta-row description-fallback">
+                <Info size={16} className="meta-icon" />
+                <span>{modalData.description}</span>
               </div>
             )}
-            {modalData.release_name && (
-              <div className="meta-row">
-                <Disc size={16} className="meta-icon" />
-                <span>{modalData.release_name}</span>
-              </div>
-            )}
-            {modalData.set_name && (
-              <div className="meta-row">
-                <Package size={16} className="meta-icon" />
-                <span>{modalData.set_name}</span>
-              </div>
-            )}
-            {modalData.available_versions && (
-              <div className="meta-row">
-                <Layers size={16} className="meta-icon" />
-                <span>Versões: {modalData.available_versions}</span>
-              </div>
-            )}
-            {modalData.store_name && (
-              <div className="meta-row">
-                <ShoppingBag size={16} className="meta-icon" />
-                <span>{modalData.store_name}</span>
-              </div>
-            )}
-            {modalData.other_cards_in_set && (
-              <div className="meta-row" style={{ alignItems: "flex-start" }}>
-                <Grid
-                  size={16}
-                  className="meta-icon"
-                  style={{ marginTop: "3px" }}
-                />
-                <div style={{ fontSize: "0.85rem" }}>
-                  <strong>Outros no set:</strong>
-                  <br />
-                  {modalData.other_cards_in_set}
-                </div>
-              </div>
-            )}
-            {!modalData.release_name &&
-              !modalData.set_name &&
-              modalData.description && (
-                <div className="meta-row description-fallback">
-                  <Info size={16} className="meta-icon" />
-                  <span>{modalData.description}</span>
-                </div>
-              )}
-          </div>
         </div>
       );
     }
 
     return (
       <div className="modal-info-content">
-        <h3 className="modal-info-title">
-          {modalData.name || modalData.stage_name}
-        </h3>
         <p>
           {modalData.artist_name || modalData.category || modalData.description}
         </p>
@@ -427,59 +422,130 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
                 <h2 className="modal-title">
                   {modalData.name || modalData.stage_name || "Detalhes"}
                 </h2>
-                <div className="modal-card-scene">
-                  <div
-                    className={`modal-card-inner ${
-                      isFlippedInModal ? "is-flipped" : ""
-                    }`}
-                  >
-                    <div className="modal-card-face modal-card-front">
+
+                {modalType === "photocards" ? (
+                  <>
+                    <div className="modal-card-scene">
                       <div
-                        className={`card ${
-                          modalType === "photocards" ? "glossy-card" : ""
+                        className={`modal-card-inner ${
+                          isFlippedInModal ? "is-flipped" : ""
                         }`}
-                        style={{
-                          backgroundImage: `url('${getModalImage()}')`,
-                          backgroundSize: "cover",
-                          backgroundPosition: "center",
-                        }}
-                        onMouseMove={handleMouseMove}
-                      ></div>
+                      >
+                        {/* Frente */}
+                        <div
+                          className="modal-card-face modal-card-front"
+                          style={{
+                            padding: "10px",
+                            backgroundColor: "#fff",
+                          }}
+                        >
+                          <div
+                            className="card glossy-card"
+                            style={{
+                              backgroundImage: `url('${getModalImage()}')`,
+                              backgroundSize: "cover",
+                              backgroundPosition: "center",
+                              width: "100%",
+                              height: "100%",
+                            }}
+                            onMouseMove={handleMouseMove}
+                          ></div>
+                        </div>
+
+                        {/* Verso */}
+                        <div
+                          className="modal-card-face modal-card-back"
+                          style={{
+                            padding: "10px",
+                            backgroundColor: "#f4f4f5", // Cor padrão de verso
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          {modalData.back_image ? (
+                            <img
+                              src={modalData.back_image}
+                              alt="Verso"
+                              className="modal-img-display"
+                            />
+                          ) : (
+                            <div
+                              className="modal-back-placeholder"
+                              style={{ color: "#aaa", textAlign: "center" }}
+                            >
+                              <Package
+                                size={40}
+                                style={{ opacity: 0.5, marginBottom: 10 }}
+                              />
+                              <p style={{ fontSize: "0.8rem", margin: 0 }}>
+                                Sem verso disponível
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="modal-card-face modal-card-back">
-                      {modalData.back_image ? (
-                        <img
-                          src={modalData.back_image}
-                          alt="Verso"
-                          className="modal-img-display"
-                        />
-                      ) : (
-                        <div className="modal-back-placeholder">
-                          {renderModalDetails()}
-                        </div>
-                      )}
+                    {/* Controles estilo Binder */}
+                    <div className="modal-controls">
+                      <button
+                        className="modal-action-btn"
+                        onClick={() => setIsFlippedInModal(!isFlippedInModal)}
+                      >
+                        <RotateCw size={18} />
+                        {isFlippedInModal ? "Frente" : "Verso"}
+                      </button>
+
+                      <button
+                        className="modal-action-btn secondary"
+                        onClick={() =>
+                          alert(`Adicionar ID ${modalData.id} à wishlist?`)
+                        }
+                      >
+                        <Plus size={18} />
+                        Coleção
+                      </button>
+                    </div>
+
+                    {/* Detalhes/Metadados em container com scroll se necessário */}
+                    <div className="modal-info-details">
+                      {renderModalMetadata()}
+                    </div>
+                  </>
+                ) : (
+                  // --- LÓGICA PADRÃO PARA ÁLBUNS/IDOLS (Sem 3D flip) ---
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      height: "100%",
+                    }}
+                  >
+                    <div
+                      style={{
+                        padding: "20px",
+                        display: "flex",
+                        justifyContent: "center",
+                        backgroundColor: "var(--color-surface-2)",
+                      }}
+                    >
+                      <img
+                        src={getModalImage()}
+                        alt={modalData.name}
+                        style={{
+                          maxHeight: "300px",
+                          maxWidth: "100%",
+                          borderRadius: "8px",
+                          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                        }}
+                      />
+                    </div>
+                    <div className="modal-info-details">
+                      {renderModalMetadata()}
                     </div>
                   </div>
-                </div>
-                <div className="modal-controls">
-                  <button
-                    className="modal-action-btn"
-                    onClick={() => setIsFlippedInModal(!isFlippedInModal)}
-                  >
-                    <span className="material-symbols-outlined">360</span>
-                    {isFlippedInModal ? "Frente" : "Verso"}
-                  </button>
-                  <button
-                    className="modal-action-btn secondary"
-                    onClick={() =>
-                      alert(`Adicionar ID ${modalData.id} à wishlist?`)
-                    }
-                  >
-                    <span className="material-symbols-outlined">add</span>{" "}
-                    Coleção
-                  </button>
-                </div>
+                )}
               </>
             )}
           </div>
