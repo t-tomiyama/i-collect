@@ -13,7 +13,6 @@ import {
   Grid,
   RotateCw,
   Plus,
-  Heart,
 } from "lucide-react";
 import "./SearchPage.css";
 
@@ -111,7 +110,7 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
     else document.body.classList.remove("info-visible");
   }, [modalOpen]);
 
-  // --- Efeito Glossy/Holográfico (Copiado do BinderPage) ---
+  // --- Efeito Glossy/Holográfico (Mantido APENAS NO MODAL) ---
   const handleMouseMove = (e) => {
     const card = e.currentTarget;
     const rect = card.getBoundingClientRect();
@@ -366,20 +365,39 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
               <span>{modalData.store_name}</span>
             </div>
           )}
-          {modalData.other_cards_in_set && (
-            <div className="meta-row" style={{ alignItems: "flex-start" }}>
-              <Grid
-                size={16}
-                className="meta-icon"
-                style={{ marginTop: "3px" }}
-              />
-              <div style={{ fontSize: "0.85rem" }}>
-                <strong>Outros no set:</strong>
-                <br />
-                {modalData.other_cards_in_set}
+
+          {/* --- CORREÇÃO DO ERRO #31 AQUI --- */}
+          {modalData.other_cards_in_set &&
+            Array.isArray(modalData.other_cards_in_set) &&
+            modalData.other_cards_in_set.length > 0 && (
+              <div className="meta-row" style={{ alignItems: "flex-start" }}>
+                <Grid
+                  size={16}
+                  className="meta-icon"
+                  style={{ marginTop: "3px" }}
+                />
+                <div style={{ fontSize: "0.85rem" }}>
+                  <strong>Outros no set:</strong>
+                  <br />
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "4px",
+                      marginTop: "4px",
+                    }}
+                  >
+                    {/* Mapeamos o array para renderizar elementos válidos, não objetos puros */}
+                    {modalData.other_cards_in_set.map((card, index) => (
+                      <span key={card.id || index} className="tag-simple">
+                        {card.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+
           {!modalData.release_name &&
             !modalData.set_name &&
             modalData.description && (
@@ -490,7 +508,6 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
                       </div>
                     </div>
 
-                    {/* Controles estilo Binder */}
                     <div className="modal-controls">
                       <button
                         className="modal-action-btn"
@@ -651,16 +668,29 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
                   <span className="photocard-card__name">
                     {pc.stage_name || pc.name}
                   </span>
+
+                  {/* Exibe Grupo/Artista */}
                   {pc.artist_name && (
                     <span className="photocard-card__group">
                       {pc.artist_name}
                     </span>
                   )}
-                  {pc.front_finish && (
+
+                  {/* ALTERAÇÃO DE DESIGN:
+                      1. Removido front_finish (Glossy/Matte)
+                      2. Adicionado release_name se existir
+                  */}
+                  {pc.release_name && (
                     <span
-                      className={`photocard-card__type-badge type-${pc.front_finish.toLowerCase()}`}
+                      className="photocard-card__release"
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "var(--color-text-muted)",
+                        marginTop: "2px",
+                        display: "block",
+                      }}
                     >
-                      {pc.front_finish}
+                      {pc.release_name}
                     </span>
                   )}
                 </div>
