@@ -60,7 +60,7 @@ export const ratingsAPI = {
   getTopRatings: async () => {
     try {
       const response = await api.get("/api/ratings/top");
-      return response.data.data;
+      return response.data;
     } catch (error) {
       console.error("Erro ao buscar ratings", error);
       return { topGoms: [], topCollectors: [] };
