@@ -111,6 +111,7 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
     else document.body.classList.remove("info-visible");
   }, [modalOpen]);
 
+  // --- Efeito Glossy/Holográfico (Copiado do BinderPage) ---
   const handleMouseMove = (e) => {
     const card = e.currentTarget;
     const rect = card.getBoundingClientRect();
@@ -328,6 +329,7 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
     return modalData.image;
   };
 
+  // Renderiza os metadados (texto)
   const renderModalMetadata = () => {
     if (!modalData) return null;
 
@@ -423,6 +425,7 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
                   {modalData.name || modalData.stage_name || "Detalhes"}
                 </h2>
 
+                {/* --- LÓGICA DO MODAL TIPO BINDER (3D) --- */}
                 {modalType === "photocards" ? (
                   <>
                     <div className="modal-card-scene">
