@@ -508,7 +508,7 @@ export function BinderPage({ user }) {
         setIsLoading(false);
       } else {
         try {
-          const colorsRes = await api.get("/api/binders/sleeve-colors");
+          const colorsRes = await api.get("/binders/sleeve-colors");
           setSleeveColors(colorsRes.data);
 
           const bindersRes = await bindersAPI.getUserBinders(
