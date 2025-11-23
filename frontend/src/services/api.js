@@ -62,6 +62,35 @@ export const searchAPI = {
     return response.data;
   },
 };
+export const bindersAPI = {
+  getUserBinders: async (userId, socialMedia) => {
+    if (!userId || !socialMedia) return [];
+    const response = await api.get(`/api/binders/${userId}/${socialMedia}`);
+    return response.data;
+  },
+
+  getBinderDetails: async (username, socialMedia, binderId) => {
+    if (!username || !socialMedia || !binderId) return null;
+    const response = await api.get(
+      `/api/binders/${username}/${socialMedia}/${binderId}`
+    );
+    return response.data;
+  },
+
+  getBinderStats: async (userId) => {
+    if (!userId) return null;
+    const response = await api.get(`/api/binders/stats/${userId}`);
+    return response.data;
+  },
+
+  createBinder: async (username, socialMedia, binderData) => {
+    const response = await api.post(
+      `/api/binders/${username}/${socialMedia}`,
+      binderData
+    );
+    return response.data;
+  },
+};
 
 export const paymentsAPI = {
   processPayments: async (paymentIds) => {
