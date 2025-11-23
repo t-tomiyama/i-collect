@@ -159,8 +159,7 @@
   background-color: var(--color-surface-2);
 }
 
-.photocard-card,
-.idol-card {
+.photocard-card {
   display: flex;
   flex-direction: column;
   padding: 0.8rem;
