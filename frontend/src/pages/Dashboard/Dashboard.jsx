@@ -387,7 +387,24 @@ const DashboardHome = ({
       <div className="content">
         <div className="loading-dashboard">
           <div className="loading-spinner"></div>
-          <p>Carregando dashboard...</p>
+          <p>Carregando seus dados...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!dashboardData || Object.keys(dashboardData).length === 0) {
+    return (
+      <div className="content">
+        <div className="empty-state">
+          <div className="empty-state__icon">
+            <AlertCircle size={48} />
+          </div>
+          <h3>Não foi possível carregar os dados</h3>
+          <p>Erro ao carregar o dashboard. Tente novamente.</p>
+          <button className="btn btn-primary" onClick={onRefreshData}>
+            Tentar Novamente
+          </button>
         </div>
       </div>
     );
@@ -837,34 +854,51 @@ function Dashboard({ onLogout, user }) {
     setLoading(true);
 
     try {
-      const rankData = await ratingsAPI.getTopRatings();
-      setRatings(rankData);
-    } catch (error) {
-      console.error("Erro ao buscar rankings:", error);
-      setRatings({ topGoms: [], topCollectors: [] });
-    }
+      // Carregar ratings em paralelo
+      const [rankData] = await Promise.all([
+        ratingsAPI.getTopRatings().catch((error) => {
+          console.error("Erro ao buscar rankings:", error);
+          return { topGoms: [], topCollectors: [] };
+        }),
+      ]);
 
-    if (!user || user.isGuest || user.id === "guest") {
-      setDashboardData(MOCK_GUEST_DATA);
-      setLoading(false);
-    } else {
-      try {
-        const dashData = await dashboardAPI.getDashboardData(user.id);
-        setDashboardData(dashData);
-      } catch (error) {
-        console.error("Erro ao carregar dados do dashboard:", error);
-        setDashboardData({
-          stats: {},
-          pendingPayments: [],
-          recentActivity: [],
-        });
-      } finally {
-        setLoading(false);
+      setRatings(rankData);
+
+      if (!user || user.isGuest || user.id === "guest") {
+        console.log("Usando dados mock para guest");
+        setDashboardData(MOCK_GUEST_DATA);
+      } else {
+        console.log("Buscando dados reais para user:", user.id);
+        try {
+          const dashData = await dashboardAPI.getDashboardData(user.id);
+          console.log("Dados do dashboard recebidos:", dashData);
+          setDashboardData(dashData);
+        } catch (error) {
+          console.error("Erro detalhado ao carregar dashboard:", error);
+          // Fallback para dados vazios
+          setDashboardData({
+            stats: {
+              totalPhotocards: 0,
+              activeCEGs: 0,
+              wishlistCount: 0,
+              photocardsThisWeek: 0,
+              cegsArriving: 0,
+              recentWishlistAdds: 0,
+            },
+            pendingPayments: [],
+            recentActivity: [],
+          });
+        }
       }
+    } catch (error) {
+      console.error("Erro geral no loadDashboardData:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
+    console.log("User no Dashboard:", user);
     loadDashboardData();
   }, [user]);
 
