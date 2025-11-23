@@ -100,6 +100,11 @@ export const bindersAPI = {
     return response.data;
   },
 
+  getSleeveColors: async () => {
+    const response = await api.get("/binders/sleeve-colors");
+    return response.data;
+  },
+
   createBinder: async (username, socialMedia, binderData) => {
     const response = await api.post(
       `/binders/${username}/${socialMedia}`,
