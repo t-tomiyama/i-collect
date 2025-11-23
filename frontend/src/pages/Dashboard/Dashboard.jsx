@@ -460,6 +460,7 @@ const DashboardHome = ({
                     <button
                       className="btn btn-primary"
                       onClick={() => navigate("/searchpage")}
+                      disabled
                     >
                       <Plus size={18} />
                       Adicionar Photocard
@@ -467,6 +468,7 @@ const DashboardHome = ({
                     <button
                       className="btn btn-primary"
                       onClick={() => setActiveNav("my-binders")}
+                      disabled
                     >
                       <BookOpen size={18} />
                       Adicionar Binder
@@ -474,6 +476,7 @@ const DashboardHome = ({
                     <button
                       className="btn btn-secondary"
                       onClick={() => navigate("/searchpage?type=purchase")}
+                      disabled
                     >
                       <ShoppingCart size={18} />
                       Adicionar Compra
@@ -515,6 +518,7 @@ const DashboardHome = ({
         {user && (
           <div className="stat-grid">
             {[
+              /*
               {
                 label: "Cards no Binder",
                 value: stats.totalPhotocards?.toString() || "0",
@@ -532,7 +536,7 @@ const DashboardHome = ({
                   ? `${stats.cegsArriving} chegando`
                   : "0 chegando",
                 trendType: "positive",
-              },
+              },*/
               {
                 label: "Pagamentos Pendentes",
                 value: showTotalAmount
