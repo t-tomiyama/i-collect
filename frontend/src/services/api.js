@@ -53,6 +53,20 @@ export const searchAPI = {
     return response.data;
   },
 
+  getUserCollection: async (username, socialMedia, query) => {
+    const response = await api.get("/search/user-collection", {
+      params: { username, socialMedia, q: query },
+    });
+    return response.data;
+  },
+
+  getUserWishlist: async (username, socialMedia, query) => {
+    const response = await api.get("/search/user-wishlist", {
+      params: { username, socialMedia, q: query },
+    });
+    return response.data;
+  },
+
   getDetails: async (type, id) => {
     const response = await api.get(`/search/details/${type}/${id}`);
     return response.data.data;
@@ -63,30 +77,32 @@ export const searchAPI = {
     return response.data;
   },
 };
+
 export const bindersAPI = {
   getUserBinders: async (userId, socialMedia) => {
     if (!userId || !socialMedia) return [];
-    const response = await api.get(`/api/binders/${userId}/${socialMedia}`);
+    const response = await api.get(`/binders/${userId}/${socialMedia}`);
     return response.data;
   },
 
   getBinderDetails: async (username, socialMedia, binderId) => {
     if (!username || !socialMedia || !binderId) return null;
+
     const response = await api.get(
-      `/api/binders/${username}/${socialMedia}/${binderId}`
+      `/binders/${username}/${socialMedia}/${binderId}`
     );
     return response.data;
   },
 
   getBinderStats: async (userId) => {
     if (!userId) return null;
-    const response = await api.get(`/api/binders/stats/${userId}`);
+    const response = await api.get(`/binders/stats/${userId}`);
     return response.data;
   },
 
   createBinder: async (username, socialMedia, binderData) => {
     const response = await api.post(
-      `/api/binders/${username}/${socialMedia}`,
+      `/binders/${username}/${socialMedia}`,
       binderData
     );
     return response.data;
