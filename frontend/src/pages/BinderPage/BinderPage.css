@@ -298,6 +298,10 @@ body {
   top: -100px;
 }
 
+.view-section.binder-open-view {
+  top: 0;
+}
+
 .view-section.binder-list {
   padding-top: 30px;
 }
