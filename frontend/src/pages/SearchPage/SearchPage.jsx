@@ -448,9 +448,6 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
               <span>
                 Grupo/Artista: <strong>{modalData.artist_name}</strong>
               </span>
-              <span>
-                Grupo/Artista: <strong>{modalData.artist_name}</strong>
-              </span>
             </div>
           )}
 
@@ -525,7 +522,6 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
                   {modalData.name || modalData.stage_name || "Detalhes"}
                 </h2>
 
-                {/* --- LÓGICA DO MODAL TIPO BINDER (3D) - APENAS PHOTOCARDS --- */}
                 {modalType === "photocards" ? (
                   <>
                     <div className="modal-card-scene">
@@ -534,7 +530,6 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
                           isFlippedInModal ? "is-flipped" : ""
                         }`}
                       >
-                        {/* Frente */}
                         <div
                           className="modal-card-face modal-card-front"
                           style={{
@@ -555,12 +550,11 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
                           ></div>
                         </div>
 
-                        {/* Verso */}
                         <div
                           className="modal-card-face modal-card-back"
                           style={{
                             padding: "10px",
-                            backgroundColor: "#f4f4f5", // Cor padrão de verso
+                            backgroundColor: "#f4f4f5",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -590,7 +584,6 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
                       </div>
                     </div>
 
-                    {/* Controles estilo Binder */}
                     <div className="modal-controls">
                       <button
                         className="modal-action-btn"
@@ -611,13 +604,11 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
                       </button>
                     </div>
 
-                    {/* Detalhes/Metadados em container com scroll se necessário */}
                     <div className="modal-info-details">
                       {renderModalMetadata()}
                     </div>
                   </>
                 ) : (
-                  // --- LÓGICA PADRÃO PARA ÁLBUNS/IDOLS/ARTISTS (Sem 3D flip) ---
                   <div
                     style={{
                       display: "flex",
