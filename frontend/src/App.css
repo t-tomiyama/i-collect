@@ -1801,7 +1801,7 @@ button {
 .form-input {
   width: 100%;
   padding: 1rem 1rem 1rem 3rem;
-  background-color: #f9fafb;
+  background-color: var(--color-surface-2);
   border: 2px solid var(--gray-100);
   color: var(--gray-800);
   border-radius: 1rem;
