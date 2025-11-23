@@ -13,7 +13,10 @@ import {
   Grid,
   RotateCw,
   Plus,
-} from "lucide-react";
+  Calendar,
+  Tag,
+  Globe,
+} from "lucide-react"; // Adicionei ícones novos: Calendar, Tag, Globe
 import "./SearchPage.css";
 
 const API_URL = "https://i-collect-backend.onrender.com/api";
@@ -110,7 +113,7 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
     else document.body.classList.remove("info-visible");
   }, [modalOpen]);
 
-  // --- Efeito Glossy/Holográfico (Mantido APENAS NO MODAL) ---
+  // --- Efeito Glossy/Holográfico (Mantido APENAS NO MODAL DE PC) ---
   const handleMouseMove = (e) => {
     const card = e.currentTarget;
     const rect = card.getBoundingClientRect();
@@ -262,6 +265,8 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
     setModalType(type);
     setModalData(null);
     try {
+      // Aqui removemos o 's' final do tipo se necessário para bater com o backend (se lá estiver singular)
+      // Mas baseado no seu código backend, ele aceita plural também.
       const response = await fetch(`${API_URL}/search/details/${type}/${id}`);
       const json = await response.json();
       if (json.success) setModalData(json.data);
@@ -325,13 +330,16 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
     if (modalType === "photocards")
       return modalData.image || modalData.front_image || modalData.image_url;
     if (modalType === "releases") return modalData.cover;
+    if (modalType === "idols") return modalData.image;
+    if (modalType === "artists") return modalData.image;
     return modalData.image;
   };
 
-  // Renderiza os metadados (texto)
+  // --- RENDERIZAÇÃO DOS METADADOS NO MODAL ---
   const renderModalMetadata = () => {
     if (!modalData) return null;
 
+    // === PHOTOCARDS ===
     if (modalType === "photocards") {
       return (
         <div className="modal-metadata-list">
@@ -365,8 +373,6 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
               <span>{modalData.store_name}</span>
             </div>
           )}
-
-          {/* --- CORREÇÃO DO ERRO #31 AQUI --- */}
           {modalData.other_cards_in_set &&
             Array.isArray(modalData.other_cards_in_set) &&
             modalData.other_cards_in_set.length > 0 && (
@@ -387,7 +393,6 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
                       marginTop: "4px",
                     }}
                   >
-                    {/* Mapeamos o array para renderizar elementos válidos, não objetos puros */}
                     {modalData.other_cards_in_set.map((card, index) => (
                       <span key={card.id || index} className="tag-simple">
                         {card.name}
@@ -397,24 +402,105 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
                 </div>
               </div>
             )}
-
-          {!modalData.release_name &&
-            !modalData.set_name &&
-            modalData.description && (
-              <div className="meta-row description-fallback">
-                <Info size={16} className="meta-icon" />
-                <span>{modalData.description}</span>
-              </div>
-            )}
         </div>
       );
     }
 
+    // === RELEASES (ÁLBUNS) ===
+    if (modalType === "releases") {
+      return (
+        <div className="modal-metadata-list">
+          {modalData.artist_name && (
+            <div className="meta-row">
+              <Users size={16} className="meta-icon" />
+              <span>{modalData.artist_name}</span>
+            </div>
+          )}
+          {modalData.TYPE && (
+            <div className="meta-row">
+              <Disc size={16} className="meta-icon" />
+              <span>Tipo: {modalData.TYPE}</span>
+            </div>
+          )}
+          {modalData.DATE && (
+            <div className="meta-row">
+              <Calendar size={16} className="meta-icon" />
+              <span>
+                Data: {new Date(modalData.DATE).toLocaleDateString("pt-BR")}
+              </span>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // === IDOLS ===
+    if (modalType === "idols") {
+      return (
+        <div className="modal-metadata-list">
+          {/* Exibe o nome completo */}
+          {modalData.name && (
+            <div className="meta-row">
+              <User size={16} className="meta-icon" />
+              <span>Nome Real: {modalData.name}</span>
+            </div>
+          )}
+          {/* AQUI ESTÁ A SOLICITAÇÃO: MOSTRAR O ARTISTA (GRUPO) */}
+          {modalData.artist_name && (
+            <div className="meta-row highlight-row">
+              <Users size={16} className="meta-icon" />
+              <span>
+                Grupo/Artista: <strong>{modalData.artist_name}</strong>
+              </span>
+            </div>
+          )}
+          {/* Data de Nascimento */}
+          {modalData.birth_date && (
+            <div className="meta-row">
+              <Calendar size={16} className="meta-icon" />
+              <span>
+                Nascimento:{" "}
+                {new Date(modalData.birth_date).toLocaleDateString("pt-BR")}
+              </span>
+            </div>
+          )}
+          {/* Nacionalidade */}
+          {modalData.nationality && (
+            <div className="meta-row">
+              <Globe size={16} className="meta-icon" />
+              <span>Nacionalidade: {modalData.nationality}</span>
+            </div>
+          )}
+          {/* MBTI */}
+          {modalData.mbti && (
+            <div className="meta-row">
+              <Info size={16} className="meta-icon" />
+              <span>MBTI: {modalData.mbti}</span>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // === ARTISTAS/GRUPOS ===
+    if (modalType === "artists") {
+      return (
+        <div className="modal-metadata-list">
+          {modalData.category && (
+            <div className="meta-row">
+              <Tag size={16} className="meta-icon" />
+              <span>Categoria: {modalData.category}</span>
+            </div>
+          )}
+          {/* Aqui você pode adicionar mais campos se tiver na tabela ARTIST, como company, debut date, etc */}
+        </div>
+      );
+    }
+
+    // Fallback genérico
     return (
       <div className="modal-info-content">
-        <p>
-          {modalData.artist_name || modalData.category || modalData.description}
-        </p>
+        <p>{modalData.description || "Sem mais informações."}</p>
       </div>
     );
   };
@@ -443,7 +529,7 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
                   {modalData.name || modalData.stage_name || "Detalhes"}
                 </h2>
 
-                {/* --- LÓGICA DO MODAL TIPO BINDER (3D) --- */}
+                {/* --- LÓGICA DO MODAL TIPO BINDER (3D) - APENAS PHOTOCARDS --- */}
                 {modalType === "photocards" ? (
                   <>
                     <div className="modal-card-scene">
@@ -508,6 +594,7 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
                       </div>
                     </div>
 
+                    {/* Controles estilo Binder */}
                     <div className="modal-controls">
                       <button
                         className="modal-action-btn"
@@ -534,7 +621,7 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
                     </div>
                   </>
                 ) : (
-                  // --- LÓGICA PADRÃO PARA ÁLBUNS/IDOLS (Sem 3D flip) ---
+                  // --- LÓGICA PADRÃO PARA ÁLBUNS/IDOLS/ARTISTS (Sem 3D flip) ---
                   <div
                     style={{
                       display: "flex",
@@ -558,6 +645,7 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
                           maxWidth: "100%",
                           borderRadius: "8px",
                           boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                          objectFit: "contain",
                         }}
                       />
                     </div>
@@ -668,18 +756,11 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
                   <span className="photocard-card__name">
                     {pc.stage_name || pc.name}
                   </span>
-
-                  {/* Exibe Grupo/Artista */}
                   {pc.artist_name && (
                     <span className="photocard-card__group">
                       {pc.artist_name}
                     </span>
                   )}
-
-                  {/* ALTERAÇÃO DE DESIGN:
-                      1. Removido front_finish (Glossy/Matte)
-                      2. Adicionado release_name se existir
-                  */}
                   {pc.release_name && (
                     <span
                       className="photocard-card__release"

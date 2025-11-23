@@ -120,8 +120,21 @@
 
 .photocard-card,
 .release-card,
-.idol-card,
 .artist-card {
+  background-color: var(--color-surface-1);
+  border-radius: 2rem;
+  box-shadow: var(--color-shadow-md);
+  border: 1px solid var(--color-border);
+  transition: all 0.3s ease-in-out;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.idol-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  gap: 0;
   background-color: var(--color-surface-1);
   border-radius: 2rem;
   box-shadow: var(--color-shadow-md);
