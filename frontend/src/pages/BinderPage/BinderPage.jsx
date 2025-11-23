@@ -183,22 +183,28 @@ const CardConfigModal = ({
   isOpen,
   onClose,
   onUpdateCard,
-  mockSearchCards,
   cardToEdit,
   handleMouseMove,
   sleeveColors,
+  user, // Recebendo usuário para os filtros
 }) => {
   const isEditing = !!cardToEdit;
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterMode, setFilterMode] = useState("all"); // 'all', 'collection', 'wishlist'
+  const [searchResults, setSearchResults] = useState([]);
+  const [isLoadingSearch, setIsLoadingSearch] = useState(false);
+
   const [selectedCardId, setSelectedCardId] = useState(null);
   const [tempCardStatus, setTempCardStatus] = useState("have");
   const [tempSleeveColor, setTempSleeveColor] = useState("#ffffff");
   const [tempSleeveId, setTempSleeveId] = useState(null);
 
+  // Card atual: ou o que está sendo editado, ou o selecionado da busca
   const currentCard = isEditing
     ? cardToEdit
-    : mockSearchCards.find((card) => card.id === selectedCardId);
+    : searchResults.find((card) => card.id === selectedCardId);
 
+  // Reset ao abrir
   useEffect(() => {
     if (isOpen) {
       if (isEditing) {
@@ -211,21 +217,74 @@ const CardConfigModal = ({
         setTempSleeveId(sleeveColors[0]?.id || null);
         setTempCardStatus("have");
         setSelectedCardId(null);
+        setSearchTerm("");
+        setFilterMode("all");
+        setSearchResults([]); // Limpa resultados anteriores
       }
-      setSearchTerm("");
     }
   }, [isOpen, isEditing, cardToEdit, sleeveColors]);
 
-  const filteredCards = isEditing
-    ? []
-    : mockSearchCards.filter(
-        (card) =>
-          card.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          card.group?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+  // Lógica de Busca Dinâmica
+  useEffect(() => {
+    if (isEditing || !isOpen) return;
+
+    const delayDebounceFn = setTimeout(async () => {
+      // Se não tiver termo e for busca geral, não busca (evita carregar tudo do banco)
+      if (filterMode === "all" && searchTerm.length < 2) {
+        setSearchResults([]);
+        return;
+      }
+
+      setIsLoadingSearch(true);
+      try {
+        let endpoint = "/api/search/photocards"; // Default ALL
+        let params = { q: searchTerm };
+
+        // Se tiver usuário logado, adiciona credenciais
+        if (user && !user.isGuest) {
+          if (filterMode === "collection") {
+            endpoint = "/api/search/user-collection";
+            params.username = user.id || user.username;
+            params.socialMedia = 1; // Fixo 1 ou vindo do user context
+          } else if (filterMode === "wishlist") {
+            endpoint = "/api/search/user-wishlist";
+            params.username = user.id || user.username;
+            params.socialMedia = 1;
+          }
+        }
+
+        const res = await api.get(endpoint, { params });
+
+        // Normaliza os dados retornados para o formato do frontend
+        const normalizedData = res.data.data.map((item) => ({
+          id: item.id,
+          name: item.name,
+          group: item.artist_name, // Backend retorna artist_name
+          idol: item.stage_name || "",
+          img1: item.front_image,
+          backImg: item.back_image,
+          type:
+            item.front_finish === "Lenticular"
+              ? "lenticular-card"
+              : "glossy-card",
+          status: item.status || "have", // Wishlist endpoint já retorna status
+        }));
+
+        setSearchResults(normalizedData);
+      } catch (error) {
+        console.error("Erro na busca:", error);
+      } finally {
+        setIsLoadingSearch(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, filterMode, isOpen, isEditing, user]);
 
   const handleSelectCard = (card) => {
     setSelectedCardId(card.id);
+    // Se veio da wishlist, sugere status wishlist, senão have
+    setTempCardStatus(card.status === "wishlist" ? "wishlist" : "have");
   };
 
   const handleConfirmAction = () => {
@@ -254,17 +313,58 @@ const CardConfigModal = ({
         <div className="modal-body-wrapper">
           {!isEditing && (
             <div className="search-filter-section">
+              {/* Abas de Filtro */}
+              <div className="filter-tabs">
+                <button
+                  className={`filter-tab ${
+                    filterMode === "all" ? "active" : ""
+                  }`}
+                  onClick={() => setFilterMode("all")}
+                >
+                  Todos
+                </button>
+                <button
+                  className={`filter-tab ${
+                    filterMode === "collection" ? "active" : ""
+                  }`}
+                  onClick={() => setFilterMode("collection")}
+                  disabled={!user || user.isGuest}
+                >
+                  Meus Cards
+                </button>
+                <button
+                  className={`filter-tab ${
+                    filterMode === "wishlist" ? "active" : ""
+                  }`}
+                  onClick={() => setFilterMode("wishlist")}
+                  disabled={!user || user.isGuest}
+                >
+                  Wishlist
+                </button>
+              </div>
+
               <div className="search-input-group">
                 <Search size={18} />
                 <input
                   type="text"
-                  placeholder="Buscar..."
+                  placeholder={
+                    filterMode === "all" ? "Buscar no sistema..." : "Filtrar..."
+                  }
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
+
               <div className="results-list">
-                {filteredCards.map((card) => (
+                {isLoadingSearch && (
+                  <div className="loading-msg">Buscando...</div>
+                )}
+
+                {!isLoadingSearch && searchResults.length === 0 && (
+                  <div className="empty-search">Nenhum card encontrado</div>
+                )}
+
+                {searchResults.map((card) => (
                   <div
                     key={card.id}
                     className={`result-item ${
@@ -281,8 +381,13 @@ const CardConfigModal = ({
                     <div className="result-info">
                       <p className="card-name">{card.name}</p>
                       <p className="card-details">
-                        {card.group} | {card.idol}
+                        {card.group} {card.idol ? `| ${card.idol}` : ""}
                       </p>
+                      {filterMode !== "all" && (
+                        <span className={`badge-status ${card.status}`}>
+                          {card.status === "wishlist" ? "Wishlist" : "Coleção"}
+                        </span>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -292,7 +397,7 @@ const CardConfigModal = ({
           {currentCard ? (
             <div className="selected-card-details">
               <h3>
-                {isEditing ? "Editando" : "Configurar Card"}:{currentCard.name}
+                {isEditing ? "Editando" : "Configurar Card"}: {currentCard.name}
               </h3>
               <div className="preview-card-wrapper">
                 <div
@@ -304,34 +409,20 @@ const CardConfigModal = ({
                     style={{ backgroundImage: `url('${currentCard.img1}')` }}
                     onMouseMove={handleMouseMove}
                   >
-                    {currentCard.type === "lenticular-card" &&
-                      currentCard.img2 && (
-                        <>
-                          <div
-                            className="lenticular-fg"
-                            style={{
-                              backgroundImage: `url('${currentCard.img2}')`,
-                            }}
-                          ></div>
-                          <div className="lenticular-pattern"></div>
-                          <div className="light"></div>
-                        </>
-                      )}
                   </div>
                 </div>
               </div>
               <div className="config-options">
                 <div className="config-group">
-                  <span className="label">Status:</span>
+                  <span className="label">Status no Binder:</span>
                   <select
                     value={tempCardStatus}
                     onChange={(e) => setTempCardStatus(e.target.value)}
                   >
-                    {Object.entries(STATUS_TEXT).map(([key, value]) => (
-                      <option key={key} value={key}>
-                        {value}
-                      </option>
-                    ))}
+ 
+                    <option value="have">Na Coleção</option>
+                    <option value="wishlist">Wishlist</option>
+                    <option value="on-the-way-national">A Caminho</option>
                   </select>
                 </div>
                 <div className="config-group">
@@ -350,9 +441,7 @@ const CardConfigModal = ({
                         }}
                       >
                         {tempSleeveColor === swatch.hex_color && (
-                          <span className="material-symbols-outlined check-icon">
-                            check
-                          </span>
+                          <Check size={14} />
                         )}
                       </button>
                     ))}
@@ -363,7 +452,7 @@ const CardConfigModal = ({
                 className="confirm-add-btn btn-primary"
                 onClick={handleConfirmAction}
               >
-                {isEditing ? "Salvar Alterações" : "Adicionar Card"}
+                {isEditing ? "Salvar Alterações" : "Adicionar ao Binder"}
               </button>
             </div>
           ) : (
@@ -413,21 +502,25 @@ export function BinderPage({ user }) {
   }, [isModalOpen, isConfigModalOpen]);
 
   useEffect(() => {
+ useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       if (isVisitor) {
-        setBinders(BINDERS_DATA_MOCK);
-        setSleeveColors(MOCK_SLEEVE_COLORS);
-        setIsLoading(false);
+    
+         setBinders(BINDERS_DATA_MOCK); 
+         setSleeveColors(MOCK_SLEEVE_COLORS);
+         setIsLoading(false);
       } else {
         try {
           const colorsRes = await api.get("/api/binders/sleeve-colors");
           setSleeveColors(colorsRes.data);
 
+     
           const bindersRes = await bindersAPI.getUserBinders(
             user.id || user.username,
-            1
+            1 
           );
+          
           if (Array.isArray(bindersRes)) {
             const formattedBinders = bindersRes.map((b) => ({
               id: b.ID,
@@ -447,9 +540,9 @@ export function BinderPage({ user }) {
     };
     fetchData();
   }, [user, isVisitor]);
-
   const transformBackendDataToGrid = (dbPages, rows, cols) => {
     const totalSlotsPerPage = rows * cols;
+
     const structure = Array(totalPages)
       .fill(null)
       .map(() => Array(totalSlotsPerPage).fill(null));
@@ -457,21 +550,25 @@ export function BinderPage({ user }) {
     if (!dbPages) return structure;
 
     dbPages.forEach((page) => {
+
       const pageIdx = page.page_number - 1;
+      
       if (pageIdx >= 0 && pageIdx < totalPages && page.slots) {
         page.slots.forEach((slot) => {
+  
           const linearIndex = (slot.row - 1) * cols + (slot.column - 1);
+          
           if (linearIndex >= 0 && linearIndex < totalSlotsPerPage) {
+
             structure[pageIdx][linearIndex] = {
               id: slot.photocard.id,
               name: slot.photocard.name,
-              img1:
-                slot.photocard.front_image || "https://placehold.co/200x300",
+              img1: slot.photocard.front_image || "https://placehold.co/200x300",
               backImg: slot.photocard.back_image,
               type: "glossy-card",
               sleeveColor: slot.sleeve_color?.hex_color || "#ffffff",
               sleeveId: slot.sleeve_color?.id,
-              status: "have",
+              status: "have", 
             };
           }
         });
@@ -479,21 +576,23 @@ export function BinderPage({ user }) {
     });
     return structure;
   };
-
   const openBinder = async (binder) => {
     setSelectedBinder(binder);
     setCurrentLocation(0);
 
     if (isVisitor) {
-      setPagesData(INITIAL_CARDS_MOCK);
+      setPagesData(INITIAL_CARDS_MOCK); 
     } else {
       try {
         setIsLoading(true);
+
         const data = await bindersAPI.getBinderDetails(
           user.id || user.username,
           1,
           binder.id
         );
+        
+ 
         const transformed = transformBackendDataToGrid(
           data.pages,
           binder.rows,
@@ -501,7 +600,8 @@ export function BinderPage({ user }) {
         );
         setPagesData(transformed);
       } catch (error) {
-        console.error(error);
+        console.error("Erro ao abrir binder:", error);
+     
         setPagesData(
           Array(totalPages)
             .fill(null)
@@ -512,7 +612,6 @@ export function BinderPage({ user }) {
       }
     }
   };
-
   const closeBinder = () => {
     setSelectedBinder(null);
     setCurrentLocation(0);
@@ -1049,18 +1148,19 @@ export function BinderPage({ user }) {
       )}
 
       <CardConfigModal
-        isOpen={isConfigModalOpen}
-        onClose={closeConfigModal}
-        onUpdateCard={handleUpdateCardInSlot}
-        mockSearchCards={MOCK_SEARCH_CARDS}
-        cardToEdit={
-          configPosition
-            ? pagesData[configPosition.pageIndex][configPosition.slotIndex]
-            : null
-        }
-        handleMouseMove={handleMouseMove}
-        sleeveColors={sleeveColors}
-      />
+            isOpen={isConfigModalOpen}
+            onClose={closeConfigModal}
+            onUpdateCard={handleUpdateCardInSlot}
+            mockSearchCards={[]} 
+            cardToEdit={
+              configPosition
+                ? pagesData[configPosition.pageIndex][configPosition.slotIndex]
+                : null
+            }
+            handleMouseMove={handleMouseMove} 
+            sleeveColors={sleeveColors}
+            user={user} 
+          />
 
       {!selectedBinder && (
         <div className="view-section binder-list">
