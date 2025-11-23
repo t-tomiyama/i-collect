@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://i-collect-backend.onrender.com/api";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -12,7 +13,7 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token"); // Ou 'i-collect-token' dependendo de como você salvou
+    const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
