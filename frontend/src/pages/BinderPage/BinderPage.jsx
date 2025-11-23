@@ -65,9 +65,9 @@ const INITIAL_CARDS_MOCK = [
     null,
     null,
   ],
-  Array(9).fill(null), // Página 2 vazia
-  Array(9).fill(null), // Página 3 vazia
-  Array(9).fill(null), // Página 4 vazia
+  Array(9).fill(null),
+  Array(9).fill(null),
+  Array(9).fill(null),
 ];
 
 const BINDERS_DATA_MOCK = [
@@ -186,11 +186,11 @@ const CardConfigModal = ({
   cardToEdit,
   handleMouseMove,
   sleeveColors,
-  user, // Recebendo usuário para os filtros
+  user,
 }) => {
   const isEditing = !!cardToEdit;
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterMode, setFilterMode] = useState("all"); // 'all', 'collection', 'wishlist'
+  const [filterMode, setFilterMode] = useState("all");
   const [searchResults, setSearchResults] = useState([]);
   const [isLoadingSearch, setIsLoadingSearch] = useState(false);
 
@@ -199,12 +199,10 @@ const CardConfigModal = ({
   const [tempSleeveColor, setTempSleeveColor] = useState("#ffffff");
   const [tempSleeveId, setTempSleeveId] = useState(null);
 
-  // Card atual: ou o que está sendo editado, ou o selecionado da busca
   const currentCard = isEditing
     ? cardToEdit
     : searchResults.find((card) => card.id === selectedCardId);
 
-  // Reset ao abrir
   useEffect(() => {
     if (isOpen) {
       if (isEditing) {
@@ -219,17 +217,15 @@ const CardConfigModal = ({
         setSelectedCardId(null);
         setSearchTerm("");
         setFilterMode("all");
-        setSearchResults([]); // Limpa resultados anteriores
+        setSearchResults([]);
       }
     }
   }, [isOpen, isEditing, cardToEdit, sleeveColors]);
 
-  // Lógica de Busca Dinâmica
   useEffect(() => {
     if (isEditing || !isOpen) return;
 
     const delayDebounceFn = setTimeout(async () => {
-      // Se não tiver termo e for busca geral, não busca (evita carregar tudo do banco)
       if (filterMode === "all" && searchTerm.length < 2) {
         setSearchResults([]);
         return;
@@ -237,15 +233,14 @@ const CardConfigModal = ({
 
       setIsLoadingSearch(true);
       try {
-        let endpoint = "/api/search/photocards"; // Default ALL
+        let endpoint = "/api/search/photocards";
         let params = { q: searchTerm };
 
-        // Se tiver usuário logado, adiciona credenciais
         if (user && !user.isGuest) {
           if (filterMode === "collection") {
             endpoint = "/api/search/user-collection";
             params.username = user.id || user.username;
-            params.socialMedia = 1; // Fixo 1 ou vindo do user context
+            params.socialMedia = 1;
           } else if (filterMode === "wishlist") {
             endpoint = "/api/search/user-wishlist";
             params.username = user.id || user.username;
@@ -255,11 +250,10 @@ const CardConfigModal = ({
 
         const res = await api.get(endpoint, { params });
 
-        // Normaliza os dados retornados para o formato do frontend
         const normalizedData = res.data.data.map((item) => ({
           id: item.id,
           name: item.name,
-          group: item.artist_name, // Backend retorna artist_name
+          group: item.artist_name,
           idol: item.stage_name || "",
           img1: item.front_image,
           backImg: item.back_image,
@@ -267,7 +261,7 @@ const CardConfigModal = ({
             item.front_finish === "Lenticular"
               ? "lenticular-card"
               : "glossy-card",
-          status: item.status || "have", // Wishlist endpoint já retorna status
+          status: item.status || "have",
         }));
 
         setSearchResults(normalizedData);
@@ -283,7 +277,6 @@ const CardConfigModal = ({
 
   const handleSelectCard = (card) => {
     setSelectedCardId(card.id);
-    // Se veio da wishlist, sugere status wishlist, senão have
     setTempCardStatus(card.status === "wishlist" ? "wishlist" : "have");
   };
 
@@ -313,7 +306,6 @@ const CardConfigModal = ({
         <div className="modal-body-wrapper">
           {!isEditing && (
             <div className="search-filter-section">
-              {/* Abas de Filtro */}
               <div className="filter-tabs">
                 <button
                   className={`filter-tab ${
@@ -532,6 +524,7 @@ export function BinderPage({ user }) {
     };
     fetchData();
   }, [user, isVisitor]);
+
   const transformBackendDataToGrid = (dbPages, rows, cols) => {
     const totalSlotsPerPage = rows * cols;
 
@@ -566,6 +559,7 @@ export function BinderPage({ user }) {
     });
     return structure;
   };
+
   const openBinder = async (binder) => {
     setSelectedBinder(binder);
     setCurrentLocation(0);
@@ -577,7 +571,7 @@ export function BinderPage({ user }) {
         setIsLoading(true);
 
         const data = await bindersAPI.getBinderDetails(
-          user.id || user.username,
+          user.username,
           1,
           binder.id
         );
@@ -648,11 +642,7 @@ export function BinderPage({ user }) {
           columns: newBinderData.cols,
           color: newBinderData.theme,
         };
-        const saved = await bindersAPI.createBinder(
-          user.id || user.username,
-          1,
-          payload
-        );
+        const saved = await bindersAPI.createBinder(user.username, 1, payload);
         setBinders([
           ...binders,
           {
@@ -693,9 +683,7 @@ export function BinderPage({ user }) {
         const pageNum = pageIndex + 1;
 
         await api.put(
-          `/api/binders/${user.id || user.username}/1/${
-            selectedBinder.id
-          }/pages/${pageNum}/slots`,
+          `/binders/${user.username}/1/${selectedBinder.id}/pages/${pageNum}/slots`,
           {
             row,
             column: col,
@@ -728,9 +716,7 @@ export function BinderPage({ user }) {
         const pageNum = pageIndex + 1;
 
         await api.put(
-          `/api/binders/${user.id || user.username}/1/${
-            selectedBinder.id
-          }/pages/${pageNum}/slots`,
+          `/binders/${user.username}/1/${selectedBinder.id}/pages/${pageNum}/slots`,
           {
             row,
             column: col,
