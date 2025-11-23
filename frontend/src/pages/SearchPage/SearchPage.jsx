@@ -406,7 +406,6 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
       );
     }
 
-    // === RELEASES (ÁLBUNS) ===
     if (modalType === "releases") {
       return (
         <div className="modal-metadata-list">
@@ -434,27 +433,27 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
       );
     }
 
-    // === IDOLS ===
     if (modalType === "idols") {
       return (
         <div className="modal-metadata-list">
-          {/* Exibe o nome completo */}
           {modalData.name && (
             <div className="meta-row">
               <User size={16} className="meta-icon" />
-              <span>Nome Real: {modalData.name}</span>
+              <span>Nome: {modalData.name}</span>
             </div>
           )}
-          {/* AQUI ESTÁ A SOLICITAÇÃO: MOSTRAR O ARTISTA (GRUPO) */}
           {modalData.artist_name && (
             <div className="meta-row highlight-row">
               <Users size={16} className="meta-icon" />
               <span>
                 Grupo/Artista: <strong>{modalData.artist_name}</strong>
               </span>
+              <span>
+                Grupo/Artista: <strong>{modalData.artist_name}</strong>
+              </span>
             </div>
           )}
-          {/* Data de Nascimento */}
+
           {modalData.birth_date && (
             <div className="meta-row">
               <Calendar size={16} className="meta-icon" />
@@ -464,14 +463,14 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
               </span>
             </div>
           )}
-          {/* Nacionalidade */}
+
           {modalData.nationality && (
             <div className="meta-row">
               <Globe size={16} className="meta-icon" />
               <span>Nacionalidade: {modalData.nationality}</span>
             </div>
           )}
-          {/* MBTI */}
+
           {modalData.mbti && (
             <div className="meta-row">
               <Info size={16} className="meta-icon" />
@@ -482,7 +481,6 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
       );
     }
 
-    // === ARTISTAS/GRUPOS ===
     if (modalType === "artists") {
       return (
         <div className="modal-metadata-list">
@@ -492,12 +490,10 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
               <span>Categoria: {modalData.category}</span>
             </div>
           )}
-          {/* Aqui você pode adicionar mais campos se tiver na tabela ARTIST, como company, debut date, etc */}
         </div>
       );
     }
 
-    // Fallback genérico
     return (
       <div className="modal-info-content">
         <p>{modalData.description || "Sem mais informações."}</p>
