@@ -507,11 +507,11 @@ export function BinderPage({ user }) {
 
           if (Array.isArray(bindersRes)) {
             const formattedBinders = bindersRes.map((b) => ({
-              id: b.ID,
-              title: b.NAME,
-              rows: b.ROWS,
-              cols: b.COLUMNS,
-              theme: b.COLOR?.startsWith("theme-") ? b.COLOR : "theme-pink",
+              id: b.id,
+              title: b.name,
+              rows: b.rows,
+              cols: b.columns,
+              theme: b.color?.startsWith("theme-") ? b.color : "theme-pink",
             }));
             setBinders(formattedBinders);
           }
@@ -649,11 +649,11 @@ export function BinderPage({ user }) {
         setBinders([
           ...binders,
           {
-            id: saved.ID,
-            title: saved.NAME,
-            rows: saved.ROWS,
-            cols: saved.COLUMNS,
-            theme: saved.COLOR,
+            id: saved.id,
+            title: saved.name,
+            rows: saved.rows,
+            cols: saved.columns,
+            theme: saved.color,
           },
         ]);
       } catch (e) {
