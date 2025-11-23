@@ -1029,7 +1029,7 @@ function Dashboard({ onLogout, user }) {
     }
 
     if (path === "/binders" || path.startsWith("/binders/")) {
-      return <BinderPage />;
+      return <BinderPage user={user} />;
     }
 
     if (path === "/payments") {
