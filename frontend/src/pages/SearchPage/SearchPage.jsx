@@ -334,12 +334,9 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
     if (modalType === "artists") return modalData.image;
     return modalData.image;
   };
-
-  // --- RENDERIZAÇÃO DOS METADADOS NO MODAL ---
   const renderModalMetadata = () => {
     if (!modalData) return null;
 
-    // === PHOTOCARDS ===
     if (modalType === "photocards") {
       return (
         <div className="modal-metadata-list">
@@ -485,6 +482,81 @@ export const SearchPage = ({ initialQuery = "", initialSection = null }) => {
             <div className="meta-row">
               <Tag size={16} className="meta-icon" />
               <span>Categoria: {modalData.category}</span>
+            </div>
+          )}
+
+          {modalData.members && modalData.members.length > 0 && (
+            <div
+              className="meta-row"
+              style={{ alignItems: "flex-start", marginTop: "12px" }}
+            >
+              <Users
+                size={16}
+                className="meta-icon"
+                style={{ marginTop: "3px" }}
+              />
+              <div style={{ flex: 1 }}>
+                <strong
+                  style={{
+                    display: "block",
+                    marginBottom: "8px",
+                    fontSize: "0.9rem",
+                  }}
+                >
+                  Membros:
+                </strong>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(60px, 1fr))",
+                    gap: "10px",
+                  }}
+                >
+                  {modalData.members.map((member) => (
+                    <div
+                      key={member.id}
+                      className="member-avatar-item"
+                      onClick={() => {
+                        setModalOpen(false);
+                        setTimeout(
+                          () => handleCardClick("idols", member.id),
+                          100
+                        );
+                      }}
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        textAlign: "center",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <img
+                        src={member.image || "/default-idol.jpg"}
+                        alt={member.stage_name}
+                        style={{
+                          width: "45px",
+                          height: "45px",
+                          borderRadius: "50%",
+                          objectFit: "cover",
+                          border: "2px solid var(--color-surface-2)",
+                          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                        }}
+                      />
+                      <span
+                        style={{
+                          fontSize: "0.7rem",
+                          marginTop: "4px",
+                          lineHeight: "1.2",
+                          color: "var(--color-text)",
+                        }}
+                      >
+                        {member.stage_name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
         </div>
