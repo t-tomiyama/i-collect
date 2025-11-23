@@ -408,8 +408,7 @@ const CardConfigModal = ({
                     className={`card ${currentCard.type}`}
                     style={{ backgroundImage: `url('${currentCard.img1}')` }}
                     onMouseMove={handleMouseMove}
-                  >
-                  </div>
+                  ></div>
                 </div>
               </div>
               <div className="config-options">
@@ -419,7 +418,6 @@ const CardConfigModal = ({
                     value={tempCardStatus}
                     onChange={(e) => setTempCardStatus(e.target.value)}
                   >
- 
                     <option value="have">Na Coleção</option>
                     <option value="wishlist">Wishlist</option>
                     <option value="on-the-way-national">A Caminho</option>
@@ -502,25 +500,22 @@ export function BinderPage({ user }) {
   }, [isModalOpen, isConfigModalOpen]);
 
   useEffect(() => {
- useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       if (isVisitor) {
-    
-         setBinders(BINDERS_DATA_MOCK); 
-         setSleeveColors(MOCK_SLEEVE_COLORS);
-         setIsLoading(false);
+        setBinders(BINDERS_DATA_MOCK);
+        setSleeveColors(MOCK_SLEEVE_COLORS);
+        setIsLoading(false);
       } else {
         try {
           const colorsRes = await api.get("/api/binders/sleeve-colors");
           setSleeveColors(colorsRes.data);
 
-     
           const bindersRes = await bindersAPI.getUserBinders(
             user.id || user.username,
-            1 
+            1
           );
-          
+
           if (Array.isArray(bindersRes)) {
             const formattedBinders = bindersRes.map((b) => ({
               id: b.ID,
@@ -550,25 +545,23 @@ export function BinderPage({ user }) {
     if (!dbPages) return structure;
 
     dbPages.forEach((page) => {
-
       const pageIdx = page.page_number - 1;
-      
+
       if (pageIdx >= 0 && pageIdx < totalPages && page.slots) {
         page.slots.forEach((slot) => {
-  
           const linearIndex = (slot.row - 1) * cols + (slot.column - 1);
-          
-          if (linearIndex >= 0 && linearIndex < totalSlotsPerPage) {
 
+          if (linearIndex >= 0 && linearIndex < totalSlotsPerPage) {
             structure[pageIdx][linearIndex] = {
               id: slot.photocard.id,
               name: slot.photocard.name,
-              img1: slot.photocard.front_image || "https://placehold.co/200x300",
+              img1:
+                slot.photocard.front_image || "https://placehold.co/200x300",
               backImg: slot.photocard.back_image,
               type: "glossy-card",
               sleeveColor: slot.sleeve_color?.hex_color || "#ffffff",
               sleeveId: slot.sleeve_color?.id,
-              status: "have", 
+              status: "have",
             };
           }
         });
@@ -581,7 +574,7 @@ export function BinderPage({ user }) {
     setCurrentLocation(0);
 
     if (isVisitor) {
-      setPagesData(INITIAL_CARDS_MOCK); 
+      setPagesData(INITIAL_CARDS_MOCK);
     } else {
       try {
         setIsLoading(true);
@@ -591,8 +584,7 @@ export function BinderPage({ user }) {
           1,
           binder.id
         );
-        
- 
+
         const transformed = transformBackendDataToGrid(
           data.pages,
           binder.rows,
@@ -601,7 +593,7 @@ export function BinderPage({ user }) {
         setPagesData(transformed);
       } catch (error) {
         console.error("Erro ao abrir binder:", error);
-     
+
         setPagesData(
           Array(totalPages)
             .fill(null)
@@ -1148,19 +1140,19 @@ export function BinderPage({ user }) {
       )}
 
       <CardConfigModal
-            isOpen={isConfigModalOpen}
-            onClose={closeConfigModal}
-            onUpdateCard={handleUpdateCardInSlot}
-            mockSearchCards={[]} 
-            cardToEdit={
-              configPosition
-                ? pagesData[configPosition.pageIndex][configPosition.slotIndex]
-                : null
-            }
-            handleMouseMove={handleMouseMove} 
-            sleeveColors={sleeveColors}
-            user={user} 
-          />
+        isOpen={isConfigModalOpen}
+        onClose={closeConfigModal}
+        onUpdateCard={handleUpdateCardInSlot}
+        mockSearchCards={[]}
+        cardToEdit={
+          configPosition
+            ? pagesData[configPosition.pageIndex][configPosition.slotIndex]
+            : null
+        }
+        handleMouseMove={handleMouseMove}
+        sleeveColors={sleeveColors}
+        user={user}
+      />
 
       {!selectedBinder && (
         <div className="view-section binder-list">
