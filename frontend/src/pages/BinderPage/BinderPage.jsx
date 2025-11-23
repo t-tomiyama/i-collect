@@ -542,17 +542,20 @@ export function BinderPage({ user }) {
           const linearIndex = (slot.row - 1) * cols + (slot.column - 1);
 
           if (linearIndex >= 0 && linearIndex < totalSlotsPerPage) {
-            structure[pageIdx][linearIndex] = {
-              id: slot.photocard.id,
-              name: slot.photocard.name,
-              img1:
-                slot.photocard.front_image || "https://placehold.co/200x300",
-              backImg: slot.photocard.back_image,
-              type: "glossy-card",
-              sleeveColor: slot.sleeve_color?.hex_color || "#ffffff",
-              sleeveId: slot.sleeve_color?.id,
-              status: "have",
-            };
+            if (slot.photocard) {
+              structure[pageIdx][linearIndex] = {
+                id: slot.photocard.id,
+                name: slot.photocard.name,
+                img1:
+                  slot.photocard.front_image || "https://placehold.co/200x300",
+                backImg: slot.photocard.back_image,
+                group: slot.photocard.artist,
+                type: "glossy-card",
+                sleeveColor: slot.sleeve_color?.hex_color || "#ffffff",
+                sleeveId: slot.sleeve_color?.id,
+                status: "have",
+              };
+            }
           }
         });
       }
