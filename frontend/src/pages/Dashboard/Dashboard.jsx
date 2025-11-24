@@ -427,6 +427,14 @@ const DashboardHome = ({
     }
   };
 
+  const getSellerLabel = (payment) => {
+    if (payment.gom_names) {
+      return Array.isArray(payment.gom_names)
+        ? payment.gom_names.join(", ")
+        : payment.gom_names;
+    }
+    return payment.seller_name || payment.seller_username || "Desconhecido";
+  };
   const groupedPaymentsBySeller = pendingPayments.reduce((acc, pay) => {
     const sellerLabel = getSellerLabel(pay);
     if (!acc[sellerLabel]) {
