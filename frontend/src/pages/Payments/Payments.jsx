@@ -195,19 +195,35 @@ const PaymentModal = ({
 }) => {
   if (!isVisible) return null;
 
+  const calculateLateFee = (payment) => {
+    if (payment.status !== "atrasado") return 0;
+    const today = new Date();
+    const dueDate = new Date(payment.due);
+    const diffTime = dueDate - today;
+    const daysLate = Math.max(
+      0,
+      Math.ceil(Math.abs(diffTime) / (1000 * 60 * 60 * 24))
+    );
+    const dailyLateFee = payment.lateFeePerCard || 1.5;
+    return daysLate * dailyLateFee;
+  };
+
+  const calculateTotalWithFees = (payment) => {
+    const baseAmount = payment.originalAmount;
+    const lateFee = calculateLateFee(payment);
+    return baseAmount + lateFee;
+  };
+
   const totalAmount = payments.reduce((sum, p) => {
-    const val =
-      p.originalAmount !== undefined
-        ? p.originalAmount
-        : parseFloat(p.amount.replace("R$", "").replace(",", "."));
-    return sum + val;
+    return sum + calculateTotalWithFees(p);
   }, 0);
 
   const totalLateFees = payments.reduce((sum, p) => {
-    if (p.status === "atrasado") {
-      return sum + (p.lateFeePerCard || 0);
-    }
-    return sum;
+    return sum + calculateLateFee(p);
+  }, 0);
+
+  const totalBaseAmount = payments.reduce((sum, p) => {
+    return sum + p.originalAmount;
   }, 0);
 
   const groupedPayments = payments.reduce((acc, pay) => {
@@ -232,8 +248,15 @@ const PaymentModal = ({
         {totalLateFees > 0 && (
           <div className="late-fee-warning">
             <AlertCircle size={20} />
-            <strong>Taxas de atraso aplicadas:</strong> R${" "}
-            {totalLateFees.toFixed(2).replace(".", ",")}
+            <div>
+              <strong>Taxas de atraso aplicadas:</strong> R${" "}
+              {totalLateFees.toFixed(2).replace(".", ",")}
+              <br />
+              <small>
+                ({payments.filter((p) => p.status === "atrasado").length} itens
+                com atraso)
+              </small>
+            </div>
           </div>
         )}
 
@@ -241,15 +264,22 @@ const PaymentModal = ({
           Você está prestes a pagar <strong>{payments.length} item(s)</strong>,
           totalizando{" "}
           <strong>R${totalAmount.toFixed(2).replace(".", ",")}</strong>.
+          {totalLateFees > 0 && (
+            <span className="breakdown">
+              (R$ {totalBaseAmount.toFixed(2)} + R$ {totalLateFees.toFixed(2)}{" "}
+              de taxas)
+            </span>
+          )}
         </p>
 
         <div className="payment-modal__groups">
           {Object.entries(groupedPayments).map(([seller, items]) => {
             const sellerLateFees = items.reduce(
-              (sum, item) =>
-                item.status === "atrasado"
-                  ? sum + (item.lateFeePerCard || 0)
-                  : sum,
+              (sum, item) => sum + calculateLateFee(item),
+              0
+            );
+            const sellerTotal = items.reduce(
+              (sum, item) => sum + calculateTotalWithFees(item),
               0
             );
 
@@ -264,35 +294,64 @@ const PaymentModal = ({
                   )}
                 </h3>
                 <ul className="group-card__list">
-                  {items.map((item) => (
-                    <li key={item.id} className="group-card__item">
-                      <div className="item-details">
-                        <span className="item-name truncate">{item.item}</span>
-                        <div className="item-meta">
-                          <span
-                            className={`item-status status-${item.status.replace(
-                              " ",
-                              "-"
-                            )}`}
-                          >
-                            {item.status}
-                            {item.status === "atrasado" &&
-                              item.lateFeePerCard > 0 && (
-                                <span className="item-late-fee">
-                                  (+R$ {item.lateFeePerCard.toFixed(2)})
-                                </span>
-                              )}
+                  {items.map((item) => {
+                    const itemLateFee = calculateLateFee(item);
+                    const itemTotal = calculateTotalWithFees(item);
+
+                    return (
+                      <li key={item.id} className="group-card__item">
+                        <div className="item-details">
+                          <span className="item-name truncate">
+                            {item.item}
                           </span>
+                          <div className="item-meta">
+                            <span
+                              className={`item-status status-${item.status.replace(
+                                " ",
+                                "-"
+                              )}`}
+                            >
+                              {item.status}
+                              {item.status === "atrasado" &&
+                                itemLateFee > 0 && (
+                                  <span className="item-late-fee">
+                                    ({item.daysLate || 0} dias × R${" "}
+                                    {(item.lateFeePerCard || 1.5).toFixed(2)}
+                                    /dia = +R$ {itemLateFee.toFixed(2)})
+                                  </span>
+                                )}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                      <span className="item-amount font-bold">
-                        {typeof item.amount === "number"
-                          ? `R$${item.amount.toFixed(2).replace(".", ",")}`
-                          : item.amount}
-                      </span>
-                    </li>
-                  ))}
+                        <div className="item-amount-container">
+                          {itemLateFee > 0 ? (
+                            <>
+                              <span className="item-original-amount">
+                                R${item.originalAmount.toFixed(2)}
+                              </span>
+                              <span className="item-total-amount font-bold">
+                                R${itemTotal.toFixed(2)}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="item-amount font-bold">
+                              R${itemTotal.toFixed(2)}
+                            </span>
+                          )}
+                        </div>
+                      </li>
+                    );
+                  })}
                 </ul>
+                <div className="group-card__total">
+                  Total do grupo: R$ {sellerTotal.toFixed(2)}
+                  {sellerLateFees > 0 && (
+                    <span className="group-total-breakdown">
+                      (R$ {(sellerTotal - sellerLateFees).toFixed(2)} + R${" "}
+                      {sellerLateFees.toFixed(2)} taxas)
+                    </span>
+                  )}
+                </div>
               </div>
             );
           })}
@@ -329,12 +388,50 @@ const Payments = ({ user }) => {
   const [sortOrder, setSortOrder] = useState("asc");
   const [showFilters, setShowFilters] = useState(false);
 
+  const calculateLateFee = (payment) => {
+    if (payment.status !== "atrasado") return 0;
+    const today = new Date();
+    const dueDate = new Date(payment.due);
+    const diffTime = dueDate - today;
+    const daysLate = Math.max(
+      0,
+      Math.ceil(Math.abs(diffTime) / (1000 * 60 * 60 * 24))
+    );
+    const dailyLateFee = payment.lateFeePerCard || 1.5;
+    return daysLate * dailyLateFee;
+  };
+
+  const calculateTotalWithFees = (payment) => {
+    const baseAmount = payment.originalAmount;
+    const lateFee = calculateLateFee(payment);
+    return baseAmount + lateFee;
+  };
+
   const fetchPaymentsData = async () => {
     setLoading(true);
     try {
       if (!user || user.isGuest) {
         setTimeout(() => {
-          setPayments(MOCK_PAYMENTS);
+          const updatedMockPayments = MOCK_PAYMENTS.map((payment) => {
+            if (payment.status === "atrasado") {
+              const today = new Date();
+              const dueDate = new Date(payment.due);
+              const diffTime = dueDate - today;
+              const daysLate = Math.max(
+                0,
+                Math.ceil(Math.abs(diffTime) / (1000 * 60 * 60 * 24))
+              );
+
+              return {
+                ...payment,
+                daysLate: daysLate,
+                totalWithFees: calculateTotalWithFees(payment),
+              };
+            }
+            return payment;
+          });
+
+          setPayments(updatedMockPayments);
           setLoading(false);
         }, 500);
       } else {
@@ -346,34 +443,55 @@ const Payments = ({ user }) => {
             return;
           }
 
-          const normalizedData = data.map((p) => ({
-            id: p.id,
-            item:
-              p.item_name ||
-              p.photocard_name ||
-              p.description ||
-              "Item sem nome",
-            type: p.payment_type || "Pagamento",
-            amount: `R$${Number(p.amount || 0)
-              .toFixed(2)
-              .replace(".", ",")}`,
-            originalAmount: Number(p.amount || 0),
-            due: p.due_date
-              ? new Date(p.due_date).toISOString().split("T")[0]
-              : new Date().toISOString().split("T")[0],
-            status: p.status || "Pendente",
-            seller: p.seller_username || "Comunidade",
-            cegName: p.ceg_name || "",
-            lateFeePerCard: Number(p.late_fee || 0),
-            image:
-              p.photocard_image ||
-              "https://placehold.co/55x85/e2e8f0/475569?text=PC",
-            paid: p.status === "Pago",
-            category: p.category || (p.ceg_name ? "CEG" : "Pessoal"),
-            priority: "medium",
-            paymentForm: p.payment_link || "#",
-            paymentType: p.payment_term || "Geral",
-          }));
+          const normalizedData = data.map((p) => {
+            const basePayment = {
+              id: p.id,
+              item:
+                p.item_name ||
+                p.photocard_name ||
+                p.description ||
+                "Item sem nome",
+              type: p.payment_type || "Pagamento",
+              amount: `R$${Number(p.amount || 0)
+                .toFixed(2)
+                .replace(".", ",")}`,
+              originalAmount: Number(p.amount || 0),
+              due: p.due_date
+                ? new Date(p.due_date).toISOString().split("T")[0]
+                : new Date().toISOString().split("T")[0],
+              status: p.status || "Pendente",
+              seller: p.seller_username || "Comunidade",
+              cegName: p.ceg_name || "",
+              lateFeePerCard: Number(p.late_fee || 1.5),
+              image:
+                p.photocard_image ||
+                "https://placehold.co/55x85/e2e8f0/475569?text=PC",
+              paid: p.status === "Pago",
+              category: p.category || (p.ceg_name ? "CEG" : "Pessoal"),
+              priority: "medium",
+              paymentForm: p.payment_link || "#",
+              paymentType: p.payment_term || "Geral",
+            };
+
+            if (basePayment.status === "atrasado") {
+              const today = new Date();
+              const dueDate = new Date(basePayment.due);
+              const diffTime = dueDate - today;
+              const daysLate = Math.max(
+                0,
+                Math.ceil(Math.abs(diffTime) / (1000 * 60 * 60 * 24))
+              );
+
+              return {
+                ...basePayment,
+                daysLate: daysLate,
+                totalWithFees: calculateTotalWithFees(basePayment),
+              };
+            }
+
+            return basePayment;
+          });
+
           setPayments(normalizedData);
         } catch (error) {
           console.error("Erro ao carregar pagamentos:", error);
@@ -403,14 +521,14 @@ const Payments = ({ user }) => {
   const calculateTotalPayments = () => {
     const pendingOnly = payments.filter((p) => p.status !== "Pago");
     const total = pendingOnly.reduce((sum, payment) => {
-      return sum + payment.originalAmount;
+      return sum + calculateTotalWithFees(payment);
     }, 0);
     return `R$${total.toFixed(2).replace(".", ",")}`;
   };
 
   const calculateTotalLateFees = () => {
     return payments.reduce((sum, payment) => {
-      return payment.status === "atrasado" ? sum + payment.lateFeePerCard : sum;
+      return sum + calculateLateFee(payment);
     }, 0);
   };
 
@@ -943,7 +1061,20 @@ const Payments = ({ user }) => {
                           <td className="hidden-md ceg-name">
                             {payment.cegName}
                           </td>
-                          <td className="amount">{payment.amount}</td>
+                          <td className="amount">
+                            {payment.status === "atrasado" ? (
+                              <div className="amount-with-fee">
+                                <span className="original-amount">
+                                  R${payment.originalAmount.toFixed(2)}
+                                </span>
+                                <span className="total-amount">
+                                  R${calculateTotalWithFees(payment).toFixed(2)}
+                                </span>
+                              </div>
+                            ) : (
+                              `R$${payment.originalAmount.toFixed(2)}`
+                            )}
+                          </td>
                           <td className="due-date">
                             {formatDisplayDate(payment.due)}
                           </td>
@@ -979,7 +1110,7 @@ const Payments = ({ user }) => {
                               {payment.status}
                               {payment.status === "atrasado" && (
                                 <span className="late-fee">
-                                  (+R$ {payment.lateFeePerCard.toFixed(2)})
+                                  (+R$ {calculateLateFee(payment).toFixed(2)})
                                 </span>
                               )}
                             </span>
