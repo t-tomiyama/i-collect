@@ -12,179 +12,196 @@ import {
   ChevronUp,
   Users,
   ExternalLink,
+  RefreshCw,
 } from "lucide-react";
 import "./Payments.css";
+import { paymentsAPI } from "../../services/api";
 
 const MOCK_PAYMENTS = [
   {
     id: 1,
-    item: "LE SSERAFIM Easy CEG (EMS)",
+    item: "(G)I-DLE 2 Super Lady (Yuqi)",
     type: "Pgto. de CEG",
-    amount: "R$25.00",
-    originalAmount: 25.0,
+    amount: "R$45.00",
+    originalAmount: 45.0,
     due: "2025-11-28",
     status: "atrasado",
-    seller: "@chaewon_gom",
-    cegName: "LE SSERAFIM Easy",
+    seller: "@neverland_CEGs",
+    cegName: "(G)I-DLE 2",
     lateFeePerCard: 1.5,
-    image: "https://placehold.co/55x85/ffb7b2/ffffff?text=EASY",
+    image:
+      "https://i.pinimg.com/736x/cd/e3/18/cde3183431f97924a60c64d974412284.jpg",
     paid: false,
     category: "CEG",
     priority: "high",
-    paymentForm: "https://forms.gle/chaewon_items",
+    paymentForm: "https://forms.gle/neverland_items",
     paymentType: "Itens",
   },
   {
     id: 2,
-    item: "Wonyoung IVE SWITCH PC",
-    type: "Compra Pessoal",
-    amount: "R$18.50",
-    originalAmount: 18.5,
+    item: "XG Woke Up (Jurin) POB",
+    type: "Pgto. de CEG",
+    amount: "R$85.00",
+    originalAmount: 85.0,
     due: new Date().toISOString().split("T")[0],
     status: "vence hoje",
-    seller: "@dive_into_ive",
-    cegName: "IVE SWITCH",
+    seller: "@alphaz_GOs",
+    cegName: "XG Woke Up",
     lateFeePerCard: 2.0,
-    image: "https://placehold.co/55x85/e2e8f0/475569?text=WY",
+    image:
+      "https://i.pinimg.com/736x/59/f8/0d/59f80d212b56d7b7efab33118606f35d.jpg",
     paid: false,
-    category: "Pessoal",
+    category: "CEG",
     priority: "high",
-    paymentForm: "https://forms.gle/dive_personal",
-    paymentType: "Pessoal",
+    paymentForm: "https://forms.gle/alphaz_items",
+    paymentType: "Itens",
   },
   {
     id: 3,
-    item: "NMIXX Fe3O4: BREAK CEG (Item)",
-    type: "Pgto. de CEG",
-    amount: "R$14.00",
-    originalAmount: 14.0,
+    item: "XG New DNA (Harvey)",
+    type: "Compra Pessoal",
+    amount: "R$35.00",
+    originalAmount: 35.0,
     due: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
       .toISOString()
       .split("T")[0],
     status: "pendente",
-    seller: "@haewon_vibes",
-    cegName: "NMIXX Fe3O4",
+    seller: "@xgalx_market",
+    cegName: "XG New DNA",
     lateFeePerCard: 1.0,
-    image: "https://placehold.co/55x85/bae6fd/0284c7?text=NMIXX",
+    image:
+      "https://i.pinimg.com/736x/51/b5/29/51b5295287347a74f21484467261767f.jpg",
     paid: false,
-    category: "CEG",
+    category: "Pessoal",
     priority: "medium",
-    paymentForm: "https://forms.gle/haewon_items",
-    paymentType: "Itens",
+    paymentForm: "https://forms.gle/personal_buy",
+    paymentType: "Pessoal",
   },
   {
     id: 4,
-    item: "(G)I-DLE 2 Super Lady Set",
+    item: "(G)I-DLE I Feel (Minnie POB)",
     type: "Pgto. de CEG",
-    amount: "R$45.00",
-    originalAmount: 45.0,
+    amount: "R$55.00",
+    originalAmount: 55.0,
     due: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
       .toISOString()
       .split("T")[0],
     status: "pendente",
     seller: "@neverland_CEGs",
-    cegName: "(G)I-DLE 2",
+    cegName: "(G)I-DLE I Feel",
     lateFeePerCard: 1.8,
-    image: "https://placehold.co/55x85/fbcfe8/db2777?text=I-DLE",
+    image:
+      "https://i.pinimg.com/736x/60/25/93/60259334f7d274056933711197556100.jpg",
     paid: false,
     category: "CEG",
     priority: "medium",
-    paymentForm: "https://forms.gle/neverland_items",
+    paymentForm: "https://forms.gle/neverland_pob",
     paymentType: "Itens",
   },
   {
     id: 5,
-    item: "LE SSERAFIM Easy CEG (Frete)",
+    item: "XG Shooting Star (Cocona)",
     type: "Pgto. de CEG",
-    amount: "R$10.00",
-    originalAmount: 10.0,
+    amount: "R$120.00",
+    originalAmount: 120.0,
     due: "2025-11-28",
     status: "atrasado",
-    seller: "@chaewon_gom",
-    cegName: "LE SSERAFIM Easy",
-    lateFeePerCard: 1.5,
-    image: "https://placehold.co/55x85/ffb7b2/ffffff?text=EASY",
+    seller: "@alphaz_GOs",
+    cegName: "XG Shooting Star",
+    lateFeePerCard: 2.5,
+    image:
+      "https://i.pinimg.com/736x/43/8a/56/438a56b57934733085949877c1654167.jpg",
     paid: false,
     category: "Taxa",
     priority: "low",
-    paymentForm: "https://forms.gle/chaewon_frete",
-    paymentType: "Frete",
+    paymentForm: "https://forms.gle/alphaz_ems",
+    paymentType: "EMS",
   },
   {
     id: 6,
-    item: "TWICE READY TO BE PC Set",
+    item: "(G)I-DLE Heat (Shuhua)",
     type: "Pgto. de CEG",
-    amount: "R$32.00",
-    originalAmount: 32.0,
+    amount: "R$40.00",
+    originalAmount: 40.0,
     due: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
       .toISOString()
       .split("T")[0],
     status: "pendente",
-    seller: "@twice_global",
-    cegName: "TWICE READY TO BE",
+    seller: "@shuhua_store",
+    cegName: "(G)I-DLE Heat",
     lateFeePerCard: 1.2,
-    image: "https://placehold.co/55x85/dbeafe/1e40af?text=TWICE",
+    image:
+      "https://i.pinimg.com/736x/a9/e7/f7/a9e7f7a4530023108942258687044c82.jpg",
     paid: false,
     category: "CEG",
     priority: "low",
-    paymentForm: "https://forms.gle/twice_items",
+    paymentForm: "https://forms.gle/heat_items",
     paymentType: "Itens",
   },
   {
     id: 7,
-    item: "NewJeans GET UP Photocard",
+    item: "XG AWE (Chisa)",
     type: "Compra Pessoal",
-    amount: "R$22.50",
-    originalAmount: 22.5,
+    amount: "R$60.00",
+    originalAmount: 60.0,
     due: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
       .toISOString()
       .split("T")[0],
     status: "pendente",
-    seller: "@bunnies_trades",
-    cegName: "NewJeans GET UP",
+    seller: "@xgalx_market",
+    cegName: "XG AWE",
     lateFeePerCard: 1.0,
-    image: "https://placehold.co/55x85/f0fdf4/166534?text=NJ",
+    image:
+      "https://i.pinimg.com/736x/1a/ce/56/1ace56135e1c1d76149ab35f0bcce8c5.jpg",
     paid: false,
     category: "Pessoal",
     priority: "medium",
-    paymentForm: "https://forms.gle/bunnies_personal",
+    paymentForm: "https://forms.gle/personal_buy",
     paymentType: "Pessoal",
   },
   {
     id: 8,
-    item: "TWICE READY TO BE (Frete)",
+    item: "(G)I-DLE 2 (Frete Nacional)",
     type: "Pgto. de CEG",
-    amount: "R$15.00",
-    originalAmount: 15.0,
+    amount: "R$25.00",
+    originalAmount: 25.0,
     due: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
       .toISOString()
       .split("T")[0],
     status: "pendente",
-    seller: "@twice_global",
-    cegName: "TWICE READY TO BE",
+    seller: "@neverland_CEGs",
+    cegName: "(G)I-DLE 2",
     lateFeePerCard: 0.5,
-    image: "https://placehold.co/55x85/dbeafe/1e40af?text=TWICE",
+    image:
+      "https://i.pinimg.com/736x/cd/e3/18/cde3183431f97924a60c64d974412284.jpg",
     paid: false,
     category: "Taxa",
     priority: "low",
-    paymentForm: "https://forms.gle/twice_frete",
+    paymentForm: "https://forms.gle/neverland_frete",
     paymentType: "Frete",
   },
 ];
 
-const PaymentModal = ({ isVisible, onClose, payments, onPaymentSubmit }) => {
+const PaymentModal = ({
+  isVisible,
+  onClose,
+  payments,
+  onPaymentSubmit,
+  isGuest,
+}) => {
   if (!isVisible) return null;
 
   const totalAmount = payments.reduce((sum, p) => {
-    const numericValue = parseFloat(
-      p.amount.replace("R$", "").replace(",", ".")
-    );
-    return sum + numericValue;
+    const val =
+      p.originalAmount !== undefined
+        ? p.originalAmount
+        : parseFloat(p.amount.replace("R$", "").replace(",", "."));
+    return sum + val;
   }, 0);
 
   const totalLateFees = payments.reduce((sum, p) => {
     if (p.status === "atrasado") {
-      return sum + p.lateFeePerCard;
+      return sum + (p.lateFeePerCard || 0);
     }
     return sum;
   }, 0);
@@ -226,7 +243,9 @@ const PaymentModal = ({ isVisible, onClose, payments, onPaymentSubmit }) => {
           {Object.entries(groupedPayments).map(([seller, items]) => {
             const sellerLateFees = items.reduce(
               (sum, item) =>
-                item.status === "atrasado" ? sum + item.lateFeePerCard : sum,
+                item.status === "atrasado"
+                  ? sum + (item.lateFeePerCard || 0)
+                  : sum,
               0
             );
 
@@ -253,11 +272,12 @@ const PaymentModal = ({ isVisible, onClose, payments, onPaymentSubmit }) => {
                             )}`}
                           >
                             {item.status}
-                            {item.status === "atrasado" && (
-                              <span className="item-late-fee">
-                                (+R$ {item.lateFeePerCard.toFixed(2)})
-                              </span>
-                            )}
+                            {item.status === "atrasado" &&
+                              item.lateFeePerCard > 0 && (
+                                <span className="item-late-fee">
+                                  (+R$ {item.lateFeePerCard.toFixed(2)})
+                                </span>
+                              )}
                           </span>
                           <a
                             href={item.paymentForm}
@@ -271,7 +291,9 @@ const PaymentModal = ({ isVisible, onClose, payments, onPaymentSubmit }) => {
                         </div>
                       </div>
                       <span className="item-amount font-bold">
-                        {item.amount}
+                        {typeof item.amount === "number"
+                          ? `R$${item.amount.toFixed(2).replace(".", ",")}`
+                          : item.amount}
                       </span>
                     </li>
                   ))}
@@ -286,7 +308,7 @@ const PaymentModal = ({ isVisible, onClose, payments, onPaymentSubmit }) => {
             Cancelar
           </button>
           <button className="btn btn-primary" onClick={onPaymentSubmit}>
-            Confirmar Pagamento Total (R${" "}
+            {isGuest ? "Simular Pagamento" : "Confirmar Pagamento"} Total (R${" "}
             {totalAmount.toFixed(2).replace(".", ",")})
           </button>
         </div>
@@ -296,11 +318,12 @@ const PaymentModal = ({ isVisible, onClose, payments, onPaymentSubmit }) => {
 };
 
 const Payments = ({ user }) => {
-  const [payments, setPayments] = useState(MOCK_PAYMENTS);
-  const [filteredPayments, setFilteredPayments] = useState(MOCK_PAYMENTS);
+  const [payments, setPayments] = useState([]);
+  const [filteredPayments, setFilteredPayments] = useState([]);
   const [selectedPayments, setSelectedPayments] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showTotalAmount, setShowTotalAmount] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("todos");
@@ -310,6 +333,57 @@ const Payments = ({ user }) => {
   const [sortBy, setSortBy] = useState("due");
   const [sortOrder, setSortOrder] = useState("asc");
   const [showFilters, setShowFilters] = useState(false);
+
+  const fetchPaymentsData = async () => {
+    setLoading(true);
+    try {
+      if (!user || user.isGuest) {
+        setTimeout(() => {
+          setPayments(MOCK_PAYMENTS);
+          setLoading(false);
+        }, 500);
+      } else {
+        try {
+          const data = await paymentsAPI.getPendingPayments(user.id);
+          const normalizedData = data.map((p) => ({
+            id: p.id,
+            item: p.photocard_name || p.item_name || "Item sem nome",
+            type: p.payment_type || "Pagamento",
+            amount: `R$${p.amount.toFixed(2).replace(".", ",")}`,
+            originalAmount: p.amount,
+            due: p.due_date
+              ? p.due_date.split("T")[0]
+              : new Date().toISOString().split("T")[0],
+            status: p.status,
+            seller: p.seller_name || p.seller_username || "Desconhecido",
+            cegName: p.ceg_name || "",
+            lateFeePerCard: p.late_fee || 0,
+            image:
+              p.photocard_image ||
+              "https://placehold.co/55x85/e2e8f0/475569?text=PC",
+            paid: false,
+            category: p.category || (p.ceg_name ? "CEG" : "Pessoal"),
+            priority: "medium",
+            paymentForm: p.payment_link || "#",
+            paymentType: p.payment_term || "Geral",
+          }));
+          setPayments(normalizedData);
+        } catch (error) {
+          console.error(error);
+          setPayments([]);
+        } finally {
+          setLoading(false);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPaymentsData();
+  }, [user]);
 
   const uniqueSellers = [...new Set(payments.map((p) => p.seller))];
   const uniqueCategories = [...new Set(payments.map((p) => p.category))];
@@ -453,13 +527,25 @@ const Payments = ({ user }) => {
     }
   };
 
-  const handlePaymentSubmit = () => {
-    setPayments((prevPayments) =>
-      prevPayments.filter((payment) => !selectedPayments.includes(payment.id))
-    );
-    alert(
-      `Pagamento de ${selectedPayments.length} item(s) realizado com sucesso!`
-    );
+  const handlePaymentSubmit = async () => {
+    if (!user || user.isGuest) {
+      alert("Modo Visitante: Pagamento simulado com sucesso!");
+      setPayments((prevPayments) =>
+        prevPayments.filter((payment) => !selectedPayments.includes(payment.id))
+      );
+    } else {
+      try {
+        await paymentsAPI.processPayments(selectedPayments, "PIX");
+        alert(
+          `Pagamento de ${selectedPayments.length} item(s) realizado com sucesso!`
+        );
+        fetchPaymentsData();
+      } catch (error) {
+        console.error(error);
+        alert("Erro ao processar o pagamento. Tente novamente.");
+      }
+    }
+
     setSelectedPayments([]);
     setIsModalOpen(false);
   };
@@ -492,6 +578,30 @@ const Payments = ({ user }) => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="content">
+        <div
+          className="loading-dashboard"
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "50vh",
+          }}
+        >
+          <RefreshCw
+            className="spinning"
+            size={32}
+            style={{ marginBottom: "10px", color: "var(--theme-primary)" }}
+          />
+          <p>Carregando pagamentos...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="content">
       <PaymentModal
@@ -499,6 +609,7 @@ const Payments = ({ user }) => {
         onClose={() => setIsModalOpen(false)}
         payments={payments.filter((p) => selectedPayments.includes(p.id))}
         onPaymentSubmit={handlePaymentSubmit}
+        isGuest={!user || user.isGuest}
       />
 
       <div className="payment-schedule">
@@ -508,7 +619,9 @@ const Payments = ({ user }) => {
               <CreditCard size={28} />
             </div>
             <div>
-              <h2 className="payment-schedule__title">Pagamentos</h2>
+              <h2 className="payment-schedule__title">
+                Pagamentos {(!user || user.isGuest) && "(Visitante)"}
+              </h2>
               <p className="payment-schedule__subtitle">
                 Gerencie todos os seus pagamentos pendentes em um só lugar
                 {calculateTotalLateFees() > 0 && (
@@ -602,9 +715,11 @@ const Payments = ({ user }) => {
                       onChange={(e) => setCategoryFilter(e.target.value)}
                     >
                       <option value="todos">Todas as Categorias</option>
-                      <option value="CEG">Compra Em Grupo</option>
-                      <option value="Pessoal">Compras Pessoais</option>
-                      <option value="Taxa">Taxas</option>
+                      {uniqueCategories.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
