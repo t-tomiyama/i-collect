@@ -362,7 +362,7 @@ const Payments = ({ user }) => {
               ? new Date(p.due_date).toISOString().split("T")[0]
               : new Date().toISOString().split("T")[0],
             status: p.status || "Pendente",
-            seller: p.seller_username || "Comunidade Desconhecida",
+            seller: p.seller_username || "Comunidade",
             cegName: p.ceg_name || "",
             lateFeePerCard: Number(p.late_fee || 0),
             image:
