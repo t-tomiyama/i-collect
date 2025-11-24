@@ -335,22 +335,35 @@ const Payments = ({ user }) => {
         }, 500);
       } else {
         try {
-          // CORREÇÃO AQUI: Usar getPayments (todos) ao invés de getPendingPayments
           const data = await paymentsAPI.getPayments(user.id);
+
+          if (!Array.isArray(data)) {
+            console.error("Formato de dados inválido:", data);
+            setPayments([]);
+            return;
+          }
 
           const normalizedData = data.map((p) => ({
             id: p.id,
-            item: p.item_name || p.photocard_name || "Item sem nome",
+
+            item:
+              p.item_name ||
+              p.photocard_name ||
+              p.description ||
+              "Item sem nome",
             type: p.payment_type || "Pagamento",
-            amount: `R$${parseFloat(p.amount).toFixed(2).replace(".", ",")}`,
-            originalAmount: parseFloat(p.amount),
+
+            amount: `R$${Number(p.amount || 0)
+              .toFixed(2)
+              .replace(".", ",")}`,
+            originalAmount: Number(p.amount || 0),
             due: p.due_date
-              ? p.due_date.split("T")[0]
+              ? new Date(p.due_date).toISOString().split("T")[0]
               : new Date().toISOString().split("T")[0],
-            status: p.status, // Aqui virá 'Pago', 'Pendente', 'Atrasado'
-            seller: p.seller_name || p.seller_username || "Desconhecido",
+            status: p.status || "Pendente",
+            seller: p.seller_name || p.seller_username || "Vendedor",
             cegName: p.ceg_name || "",
-            lateFeePerCard: parseFloat(p.late_fee || 0),
+            lateFeePerCard: Number(p.late_fee || 0),
             image:
               p.photocard_image ||
               "https://placehold.co/55x85/e2e8f0/475569?text=PC",
@@ -363,6 +376,7 @@ const Payments = ({ user }) => {
           setPayments(normalizedData);
         } catch (error) {
           console.error("Erro ao carregar pagamentos:", error);
+
           setPayments([]);
         } finally {
           setLoading(false);
@@ -373,7 +387,6 @@ const Payments = ({ user }) => {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchPaymentsData();
   }, [user]);
