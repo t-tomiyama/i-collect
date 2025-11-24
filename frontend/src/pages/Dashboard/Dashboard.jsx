@@ -523,8 +523,10 @@ const DashboardHome = ({
                 <p className="welcome-banner__subtitle">
                   Você está no <strong>Modo Visitante</strong>. Dados de análise
                   e pagamentos mostrados abaixo são apenas para demonstração,
-                  tops 5 são dados reais. Acesse o <strong>Catálogo</strong>{" "}
-                  para acessar os dados no nosso sistema.
+                  tops 5 são dados reais. Acesse o <strong>Catálogo</strong>
+                  para acessar os dados no nosso sistema. Clique em
+                  <strong>notificações</strong> para ver as implementações e
+                  login para teste.
                 </p>
               )}
 
