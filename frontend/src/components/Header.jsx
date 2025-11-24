@@ -177,16 +177,12 @@ export function Header({
                       <p className="notifications__item-desc">
                         O sistema está ativo. Confira os recursos funcionais:
                       </p>
-
-                      {/* LISTA MELHORADA (Classes CSS em vez de style inline) */}
                       <ul className="notifications__feature-list">
                         <li className="notifications__feature-item">
                           <CheckCircle2 size={14} className="feature-icon" />
-                          <span>Busca de Artistas, Álbuns e Idols</span>
-                        </li>
-                        <li className="notifications__feature-item">
-                          <CheckCircle2 size={14} className="feature-icon" />
-                          <span>Organização de Binders</span>
+                          <span>
+                            Busca de Artistas, Álbuns, Idols e Photocards
+                          </span>
                         </li>
                         <li className="notifications__feature-item">
                           <CheckCircle2 size={14} className="feature-icon" />
@@ -251,7 +247,7 @@ export function Header({
                 <>
                   <button className="user-menu__item">Seu Perfil</button>
                   <button className="user-menu__item">Configurações</button>
-                  <div className="user-menu__divider"></div>
+                  <div className="user-menu__divider"></div> */
                   <button
                     className="user-menu__item user-menu__item--danger"
                     onClick={onLogout}
