@@ -398,7 +398,9 @@ const CardConfigModal = ({
                 >
                   <div
                     className={`card ${currentCard.type}`}
-                    style={{ backgroundImage: `url('${currentCard.img1}')` }}
+                    style={{
+                      backgroundImage: `url('${currentCard.img1}')`,
+                    }}
                     onMouseMove={handleMouseMove}
                   ></div>
                 </div>
@@ -458,6 +460,7 @@ const CardConfigModal = ({
 
 export function BinderPage({ user }) {
   const isVisitor = user?.isGuest || user?.id === "guest" || !user;
+  const currentSocialMedia = user?.socialMediaId || 1;
 
   const [binders, setBinders] = useState([]);
   const [selectedBinder, setSelectedBinder] = useState(null);
@@ -503,7 +506,10 @@ export function BinderPage({ user }) {
           const colorsRes = await api.get("/binders/sleeve-colors");
           setSleeveColors(colorsRes.data);
 
-          const bindersRes = await bindersAPI.getUserBinders(user.username, 1);
+          const bindersRes = await bindersAPI.getUserBinders(
+            user.username,
+            currentSocialMedia
+          );
 
           if (Array.isArray(bindersRes)) {
             const formattedBinders = bindersRes.map((b) => ({
@@ -525,7 +531,7 @@ export function BinderPage({ user }) {
       }
     };
     fetchData();
-  }, [user, isVisitor]);
+  }, [user, isVisitor, currentSocialMedia]);
 
   const transformBackendDataToGrid = (dbPages, rows, cols) => {
     const totalSlotsPerPage = rows * cols;
@@ -577,7 +583,7 @@ export function BinderPage({ user }) {
 
         const data = await bindersAPI.getBinderDetails(
           user.username,
-          1,
+          currentSocialMedia,
           binder.id
         );
 
@@ -647,7 +653,11 @@ export function BinderPage({ user }) {
           columns: newBinderData.cols,
           color: newBinderData.theme,
         };
-        const saved = await bindersAPI.createBinder(user.username, 1, payload);
+        const saved = await bindersAPI.createBinder(
+          user.username,
+          currentSocialMedia,
+          payload
+        );
         setBinders([
           ...binders,
           {
@@ -688,7 +698,7 @@ export function BinderPage({ user }) {
         const pageNum = pageIndex + 1;
 
         await api.put(
-          `/binders/${user.username}/1/${selectedBinder.id}/pages/${pageNum}/slots`,
+          `/binders/${user.username}/${currentSocialMedia}/${selectedBinder.id}/pages/${pageNum}/slots`,
           {
             row,
             column: col,
@@ -721,7 +731,7 @@ export function BinderPage({ user }) {
         const pageNum = pageIndex + 1;
 
         await api.put(
-          `/binders/${user.username}/1/${selectedBinder.id}/pages/${pageNum}/slots`,
+          `/binders/${user.username}/${currentSocialMedia}/${selectedBinder.id}/pages/${pageNum}/slots`,
           {
             row,
             column: col,
