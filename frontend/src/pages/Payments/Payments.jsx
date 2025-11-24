@@ -26,7 +26,7 @@ const MOCK_PAYMENTS = [
     originalAmount: 45.0,
     due: "2025-11-28",
     status: "atrasado",
-    seller: "@neverland_CEGs",
+    seller: "2Binz CEGs",
     cegName: "(G)I-DLE 2",
     lateFeePerCard: 1.5,
     image:
@@ -45,7 +45,7 @@ const MOCK_PAYMENTS = [
     originalAmount: 85.0,
     due: new Date().toISOString().split("T")[0],
     status: "vence hoje",
-    seller: "@alphaz_GOs",
+    seller: "Hariboz CEGs",
     cegName: "XG Woke Up",
     lateFeePerCard: 2.0,
     image:
@@ -66,7 +66,7 @@ const MOCK_PAYMENTS = [
       .toISOString()
       .split("T")[0],
     status: "pendente",
-    seller: "@xgalx_market",
+    seller: "Vendas da Ju",
     cegName: "XG New DNA",
     lateFeePerCard: 1.0,
     image:
@@ -87,7 +87,7 @@ const MOCK_PAYMENTS = [
       .toISOString()
       .split("T")[0],
     status: "pendente",
-    seller: "@neverland_CEGs",
+    seller: "2Binz CEGs",
     cegName: "(G)I-DLE I Feel",
     lateFeePerCard: 1.8,
     image:
@@ -106,7 +106,7 @@ const MOCK_PAYMENTS = [
     originalAmount: 120.0,
     due: "2025-11-28",
     status: "atrasado",
-    seller: "@alphaz_GOs",
+    seller: "Hariboz CEGs",
     cegName: "XG Shooting Star",
     lateFeePerCard: 2.5,
     image:
@@ -127,7 +127,7 @@ const MOCK_PAYMENTS = [
       .toISOString()
       .split("T")[0],
     status: "pendente",
-    seller: "@shuhua_store",
+    seller: "Shuhua Store",
     cegName: "(G)I-DLE Heat",
     lateFeePerCard: 1.2,
     image:
@@ -148,7 +148,7 @@ const MOCK_PAYMENTS = [
       .toISOString()
       .split("T")[0],
     status: "pendente",
-    seller: "@xgalx_market",
+    seller: "Vendas da Ju",
     cegName: "XG AWE",
     lateFeePerCard: 1.0,
     image:
@@ -169,7 +169,7 @@ const MOCK_PAYMENTS = [
       .toISOString()
       .split("T")[0],
     status: "pendente",
-    seller: "@neverland_CEGs",
+    seller: "2Binz CEGs",
     cegName: "(G)I-DLE 2",
     lateFeePerCard: 0.5,
     image:
@@ -181,6 +181,10 @@ const MOCK_PAYMENTS = [
     paymentType: "Frete",
   },
 ];
+
+const getSellerLabel = (payment) => {
+  return payment.seller || "Comunidade Desconhecida";
+};
 
 const PaymentModal = ({
   isVisible,
@@ -207,7 +211,7 @@ const PaymentModal = ({
   }, 0);
 
   const groupedPayments = payments.reduce((acc, pay) => {
-    const seller = pay.seller;
+    const seller = getSellerLabel(pay);
     if (!acc[seller]) {
       acc[seller] = [];
     }
@@ -252,7 +256,7 @@ const PaymentModal = ({
             return (
               <div key={seller} className="payment-modal__group-card">
                 <h3 className="group-card__title">
-                  GOM: <strong>{seller}</strong> ({items.length} itens)
+                  Comunidade: <strong>{seller}</strong> ({items.length} itens)
                   {sellerLateFees > 0 && (
                     <span className="group-card__late-fees">
                       (+R$ {sellerLateFees.toFixed(2)} de taxas)
@@ -338,21 +342,18 @@ const Payments = ({ user }) => {
           const data = await paymentsAPI.getPayments(user.id);
 
           if (!Array.isArray(data)) {
-            console.error("Formato de dados inválido:", data);
             setPayments([]);
             return;
           }
 
           const normalizedData = data.map((p) => ({
             id: p.id,
-
             item:
               p.item_name ||
               p.photocard_name ||
               p.description ||
               "Item sem nome",
             type: p.payment_type || "Pagamento",
-
             amount: `R$${Number(p.amount || 0)
               .toFixed(2)
               .replace(".", ",")}`,
@@ -361,7 +362,7 @@ const Payments = ({ user }) => {
               ? new Date(p.due_date).toISOString().split("T")[0]
               : new Date().toISOString().split("T")[0],
             status: p.status || "Pendente",
-            seller: p.seller_username,
+            seller: p.seller_username || "Comunidade Desconhecida",
             cegName: p.ceg_name || "",
             lateFeePerCard: Number(p.late_fee || 0),
             image:
@@ -376,7 +377,6 @@ const Payments = ({ user }) => {
           setPayments(normalizedData);
         } catch (error) {
           console.error("Erro ao carregar pagamentos:", error);
-
           setPayments([]);
         } finally {
           setLoading(false);
@@ -387,18 +387,20 @@ const Payments = ({ user }) => {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     fetchPaymentsData();
   }, [user]);
 
-  const uniqueSellers = [...new Set(payments.map((p) => p.seller))];
-  const uniqueCategories = [...new Set(payments.map((p) => p.category))];
+  const uniqueSellers = [
+    ...new Set(payments.map((p) => getSellerLabel(p))),
+  ].sort();
+  const uniqueCategories = [...new Set(payments.map((p) => p.category))].sort();
   const uniqueCegs = [
     ...new Set(payments.map((p) => p.cegName).filter(Boolean)),
-  ];
+  ].sort();
 
   const calculateTotalPayments = () => {
-    // Filtra apenas os não pagos para o total pendente
     const pendingOnly = payments.filter((p) => p.status !== "Pago");
     const total = pendingOnly.reduce((sum, payment) => {
       return sum + payment.originalAmount;
@@ -419,7 +421,9 @@ const Payments = ({ user }) => {
       filtered = filtered.filter(
         (payment) =>
           payment.item.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          payment.seller.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          getSellerLabel(payment)
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
           payment.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
           payment.cegName?.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -438,7 +442,9 @@ const Payments = ({ user }) => {
     }
 
     if (sellerFilter !== "todos") {
-      filtered = filtered.filter((payment) => payment.seller === sellerFilter);
+      filtered = filtered.filter(
+        (payment) => getSellerLabel(payment) === sellerFilter
+      );
     }
 
     if (cegFilter !== "todos") {
@@ -462,8 +468,8 @@ const Payments = ({ user }) => {
           bValue = b.item.toLowerCase();
           break;
         case "seller":
-          aValue = a.seller.toLowerCase();
-          bValue = b.seller.toLowerCase();
+          aValue = getSellerLabel(a).toLowerCase();
+          bValue = getSellerLabel(b).toLowerCase();
           break;
         case "ceg":
           aValue = a.cegName?.toLowerCase() || "";
@@ -494,7 +500,7 @@ const Payments = ({ user }) => {
   ]);
 
   const groupedPayments = filteredPayments.reduce((acc, payment) => {
-    const seller = payment.seller;
+    const seller = getSellerLabel(payment);
     if (!acc[seller]) {
       acc[seller] = [];
     }
@@ -523,7 +529,7 @@ const Payments = ({ user }) => {
 
   const handleSelectSellerGroup = (seller) => {
     const sellerPayments = groupedPayments[seller]
-      .filter((p) => p.status !== "Pago") // Apenas não pagos
+      .filter((p) => p.status !== "Pago")
       .map((p) => p.id);
 
     if (sellerPayments.length === 0) return;
@@ -590,7 +596,7 @@ const Payments = ({ user }) => {
     if (s === "atrasado") return "var(--color-late-text)";
     if (s === "vence hoje") return "var(--color-due-text)";
     if (s === "pendente") return "var(--color-upcoming-text)";
-    if (s === "pago") return "#10b981"; // Verde para pago
+    if (s === "pago") return "#10b981";
     return "var(--color-text-muted)";
   };
 
@@ -854,7 +860,6 @@ const Payments = ({ user }) => {
                     <React.Fragment key={seller}>
                       <tr className="payment-schedule__group-row">
                         <td>
-                          {/* Checkbox de grupo apenas se houver itens pagáveis */}
                           {sellerPayments.some((p) => p.status !== "Pago") && (
                             <input
                               type="checkbox"
@@ -927,12 +932,14 @@ const Payments = ({ user }) => {
                                   </a>
                                 </div>
                                 <span className="item-seller-mobile">
-                                  {payment.seller}
+                                  {getSellerLabel(payment)}
                                 </span>
                               </div>
                             </div>
                           </td>
-                          <td className="hidden-md">{payment.seller}</td>
+                          <td className="hidden-md">
+                            {getSellerLabel(payment)}
+                          </td>
                           <td className="hidden-md ceg-name">
                             {payment.cegName}
                           </td>
