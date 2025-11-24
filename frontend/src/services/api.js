@@ -22,6 +22,15 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// Interceptor para tratamento global de erros
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error("API Error:", error.response?.data || error.message);
+    return Promise.reject(error);
+  }
+);
+
 export const authAPI = {
   login: async (credentials) => {
     const response = await api.post("/auth/login", credentials);
@@ -79,59 +88,231 @@ export const searchAPI = {
 };
 
 export const bindersAPI = {
-  getUserBinders: async (userId, socialMedia) => {
-    if (!userId || !socialMedia) return [];
-    const response = await api.get(`/binders/${userId}/${socialMedia}`);
-    return response.data;
+  getUserBinders: async (username, socialMediaId) => {
+    if (!username || !socialMediaId) {
+      console.error("Username ou socialMediaId faltando:", {
+        username,
+        socialMediaId,
+      });
+      throw new Error("Dados do usuário incompletos");
+    }
+
+    try {
+      console.log("Buscando binders para:", username, socialMediaId);
+      const response = await api.get(`/binders/${username}/${socialMediaId}`);
+
+      if (response.data && response.data.success !== undefined) {
+        return response.data.data || [];
+      }
+
+      return response.data || [];
+    } catch (error) {
+      console.error("Erro ao buscar binders:", error);
+
+      if (error.response?.status === 404) {
+        throw new Error("Usuário não encontrado para esta rede social");
+      }
+      if (error.response?.status === 400) {
+        throw new Error("Dados inválidos para buscar binders");
+      }
+
+      throw error;
+    }
   },
 
-  getBinderDetails: async (username, socialMedia, binderId) => {
-    if (!username || !socialMedia || !binderId) return null;
+  getBinderDetails: async (username, socialMediaId, binderId) => {
+    if (!username || !socialMediaId || !binderId) {
+      console.error("Dados faltando para buscar binder:", {
+        username,
+        socialMediaId,
+        binderId,
+      });
+      return null;
+    }
 
-    const response = await api.get(
-      `/binders/${username}/${socialMedia}/${binderId}`
-    );
-    return response.data;
+    try {
+      const response = await api.get(
+        `/binders/${username}/${socialMediaId}/${binderId}`
+      );
+
+      if (response.data && response.data.success !== undefined) {
+        return response.data.data;
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao buscar detalhes do binder:", error);
+
+      if (error.response?.status === 404) {
+        throw new Error("Binder não encontrado");
+      }
+
+      throw error;
+    }
   },
 
   getBinderStats: async (userId) => {
     if (!userId) return null;
-    const response = await api.get(`/binders/stats/${userId}`);
-    return response.data;
+
+    try {
+      const response = await api.get(`/binders/stats/${userId}`);
+
+      if (response.data && response.data.success !== undefined) {
+        return response.data.data;
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao buscar estatísticas:", error);
+      return null;
+    }
   },
 
   getSleeveColors: async () => {
-    const response = await api.get("/binders/sleeve-colors");
-    return response.data;
+    try {
+      const response = await api.get("/binders/sleeve-colors");
+
+      if (response.data && response.data.success !== undefined) {
+        return response.data.data;
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao buscar cores de sleeves:", error);
+      return [];
+    }
   },
 
-  createBinder: async (username, socialMedia, binderData) => {
-    const response = await api.post(
-      `/binders/${username}/${socialMedia}`,
-      binderData
-    );
-    return response.data;
+  createBinder: async (username, socialMediaId, binderData) => {
+    if (!username || !socialMediaId) {
+      throw new Error("Username e socialMediaId são obrigatórios");
+    }
+
+    if (!binderData?.name || !binderData?.rows || !binderData?.columns) {
+      throw new Error("Nome, linhas e colunas são obrigatórios");
+    }
+
+    try {
+      console.log("Criando binder:", { username, socialMediaId, binderData });
+      const response = await api.post(
+        `/binders/${username}/${socialMediaId}`,
+        binderData
+      );
+
+      if (response.data && response.data.success !== undefined) {
+        return response.data;
+      }
+
+      // Fallback
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      console.error("Erro ao criar binder:", error);
+
+      // Tratamento específico de erros
+      if (error.response?.status === 400) {
+        const errorMsg = error.response.data?.error || "Erro ao criar binder";
+        throw new Error(errorMsg);
+      }
+
+      if (error.response?.status === 404) {
+        throw new Error("Usuário não encontrado para esta rede social");
+      }
+
+      throw error;
+    }
+  },
+
+  getUserSocialMedias: async (userId) => {
+    if (!userId) return [];
+
+    try {
+      const response = await api.get(`/user/${userId}/social-medias`);
+
+      if (response.data && response.data.success !== undefined) {
+        return response.data.data;
+      }
+
+      return response.data || [];
+    } catch (error) {
+      console.error("Erro ao buscar redes sociais do usuário:", error);
+      return [];
+    }
   },
 };
 
 export const paymentsAPI = {
   processPayments: async (paymentIds) => {
-    const response = await api.post("/payments/process", {
-      paymentIds,
-    });
-    return response.data;
+    try {
+      const response = await api.post("/payments/process", {
+        paymentIds,
+      });
+
+      if (response.data && response.data.success !== undefined) {
+        return response.data;
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao processar pagamentos:", error);
+      throw error;
+    }
   },
 
   getPayments: async (userId) => {
-    const response = await api.get(`/payments/${userId}`);
-    return response.data;
+    try {
+      const response = await api.get(`/payments/${userId}`);
+
+      if (response.data && response.data.success !== undefined) {
+        return response.data.data;
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao buscar pagamentos:", error);
+      throw error;
+    }
   },
 };
 
 export const ratingsAPI = {
   getTopRatings: async () => {
-    const response = await api.get("/ratings/top");
-    return response.data;
+    try {
+      const response = await api.get("/ratings/top");
+
+      if (response.data && response.data.success !== undefined) {
+        return response.data.data;
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao buscar rankings:", error);
+      return { topGoms: [], topCollectors: [] };
+    }
+  },
+};
+
+export const debugAPI = {
+  testConnection: async () => {
+    try {
+      const response = await api.get("/health");
+      return response.data;
+    } catch (error) {
+      console.error("Erro de conexão com a API:", error);
+      throw error;
+    }
+  },
+
+  getUserInfo: async (userId) => {
+    try {
+      const response = await api.get(`/user/${userId}/info`);
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao buscar info do usuário:", error);
+      throw error;
+    }
   },
 };
 
