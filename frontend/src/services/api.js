@@ -276,6 +276,21 @@ export const paymentsAPI = {
       throw error;
     }
   },
+
+  getPayments: async (userId) => {
+    try {
+      const response = await api.get(`/payments/${userId}`);
+
+      if (response.data && response.data.success !== undefined) {
+        return response.data.data;
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao buscar pagamentos:", error);
+      throw error;
+    }
+  },
 };
 
 export const ratingsAPI = {

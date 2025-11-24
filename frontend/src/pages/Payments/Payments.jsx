@@ -279,15 +279,6 @@ const PaymentModal = ({
                                 </span>
                               )}
                           </span>
-                          <a
-                            href={item.paymentForm}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="form-link"
-                          >
-                            <ExternalLink size={12} />
-                            Form {item.paymentType}
-                          </a>
                         </div>
                       </div>
                       <span className="item-amount font-bold">
@@ -344,24 +335,26 @@ const Payments = ({ user }) => {
         }, 500);
       } else {
         try {
-          const data = await paymentsAPI.getPendingPayments(user.id);
+          // CORREÇÃO AQUI: Usar getPayments (todos) ao invés de getPendingPayments
+          const data = await paymentsAPI.getPayments(user.id);
+
           const normalizedData = data.map((p) => ({
             id: p.id,
-            item: p.photocard_name || p.item_name || "Item sem nome",
+            item: p.item_name || p.photocard_name || "Item sem nome",
             type: p.payment_type || "Pagamento",
-            amount: `R$${p.amount.toFixed(2).replace(".", ",")}`,
-            originalAmount: p.amount,
+            amount: `R$${parseFloat(p.amount).toFixed(2).replace(".", ",")}`,
+            originalAmount: parseFloat(p.amount),
             due: p.due_date
               ? p.due_date.split("T")[0]
               : new Date().toISOString().split("T")[0],
-            status: p.status,
+            status: p.status, // Aqui virá 'Pago', 'Pendente', 'Atrasado'
             seller: p.seller_name || p.seller_username || "Desconhecido",
             cegName: p.ceg_name || "",
-            lateFeePerCard: p.late_fee || 0,
+            lateFeePerCard: parseFloat(p.late_fee || 0),
             image:
               p.photocard_image ||
               "https://placehold.co/55x85/e2e8f0/475569?text=PC",
-            paid: false,
+            paid: p.status === "Pago",
             category: p.category || (p.ceg_name ? "CEG" : "Pessoal"),
             priority: "medium",
             paymentForm: p.payment_link || "#",
@@ -369,7 +362,7 @@ const Payments = ({ user }) => {
           }));
           setPayments(normalizedData);
         } catch (error) {
-          console.error(error);
+          console.error("Erro ao carregar pagamentos:", error);
           setPayments([]);
         } finally {
           setLoading(false);
@@ -392,7 +385,9 @@ const Payments = ({ user }) => {
   ];
 
   const calculateTotalPayments = () => {
-    const total = payments.reduce((sum, payment) => {
+    // Filtra apenas os não pagos para o total pendente
+    const pendingOnly = payments.filter((p) => p.status !== "Pago");
+    const total = pendingOnly.reduce((sum, payment) => {
       return sum + payment.originalAmount;
     }, 0);
     return `R$${total.toFixed(2).replace(".", ",")}`;
@@ -418,7 +413,9 @@ const Payments = ({ user }) => {
     }
 
     if (statusFilter !== "todos") {
-      filtered = filtered.filter((payment) => payment.status === statusFilter);
+      filtered = filtered.filter(
+        (payment) => payment.status.toLowerCase() === statusFilter.toLowerCase()
+      );
     }
 
     if (categoryFilter !== "todos") {
@@ -493,21 +490,31 @@ const Payments = ({ user }) => {
   }, {});
 
   const handleSingleSelect = (id) => {
+    const payment = payments.find((p) => p.id === id);
+    if (payment && payment.status === "Pago") return;
+
     setSelectedPayments((prev) =>
       prev.includes(id) ? prev.filter((_id) => _id !== id) : [...prev, id]
     );
   };
 
   const handleSelectAll = () => {
-    if (selectedPayments.length === filteredPayments.length) {
+    const payablePayments = filteredPayments.filter((p) => p.status !== "Pago");
+
+    if (selectedPayments.length === payablePayments.length) {
       setSelectedPayments([]);
     } else {
-      setSelectedPayments(filteredPayments.map((p) => p.id));
+      setSelectedPayments(payablePayments.map((p) => p.id));
     }
   };
 
   const handleSelectSellerGroup = (seller) => {
-    const sellerPayments = groupedPayments[seller].map((p) => p.id);
+    const sellerPayments = groupedPayments[seller]
+      .filter((p) => p.status !== "Pago") // Apenas não pagos
+      .map((p) => p.id);
+
+    if (sellerPayments.length === 0) return;
+
     const allSelected = sellerPayments.every((id) =>
       selectedPayments.includes(id)
     );
@@ -566,16 +573,12 @@ const Payments = ({ user }) => {
   };
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case "atrasado":
-        return "var(--color-late-text)";
-      case "vence hoje":
-        return "var(--color-due-text)";
-      case "pendente":
-        return "var(--color-upcoming-text)";
-      default:
-        return "var(--color-text-muted)";
-    }
+    const s = status.toLowerCase();
+    if (s === "atrasado") return "var(--color-late-text)";
+    if (s === "vence hoje") return "var(--color-due-text)";
+    if (s === "pendente") return "var(--color-upcoming-text)";
+    if (s === "pago") return "#10b981"; // Verde para pago
+    return "var(--color-text-muted)";
   };
 
   if (loading) {
@@ -623,7 +626,7 @@ const Payments = ({ user }) => {
                 Pagamentos {(!user || user.isGuest) && "(Visitante)"}
               </h2>
               <p className="payment-schedule__subtitle">
-                Gerencie todos os seus pagamentos pendentes em um só lugar
+                Gerencie todos os seus pagamentos pendentes e histórico
                 {calculateTotalLateFees() > 0 && (
                   <span className="late-fees-badge">
                     • Taxas de atraso: R$ {calculateTotalLateFees().toFixed(2)}
@@ -652,7 +655,9 @@ const Payments = ({ user }) => {
               <h3 className="stat-card__value">
                 {showTotalAmount
                   ? calculateTotalPayments()
-                  : `${payments.length} Pagamentos`}
+                  : `${
+                      payments.filter((p) => p.status !== "Pago").length
+                    } Pendentes`}
                 <button
                   onClick={() => setShowTotalAmount(!showTotalAmount)}
                   className="stat-card__toggle-visibility"
@@ -702,9 +707,10 @@ const Payments = ({ user }) => {
                       onChange={(e) => setStatusFilter(e.target.value)}
                     >
                       <option value="todos">Todos os Status</option>
+                      <option value="pendente">Pendentes</option>
                       <option value="atrasado">Atrasados</option>
                       <option value="vence hoje">Vence Hoje</option>
-                      <option value="pendente">Pendentes</option>
+                      <option value="pago">Pagos</option>
                     </select>
                   </div>
 
@@ -803,8 +809,10 @@ const Payments = ({ user }) => {
                   <input
                     type="checkbox"
                     checked={
-                      selectedPayments.length === filteredPayments.length &&
-                      filteredPayments.length > 0
+                      selectedPayments.length > 0 &&
+                      selectedPayments.length ===
+                        filteredPayments.filter((p) => p.status !== "Pago")
+                          .length
                     }
                     onChange={handleSelectAll}
                   />
@@ -833,13 +841,16 @@ const Payments = ({ user }) => {
                     <React.Fragment key={seller}>
                       <tr className="payment-schedule__group-row">
                         <td>
-                          <input
-                            type="checkbox"
-                            checked={sellerPayments.every((p) =>
-                              selectedPayments.includes(p.id)
-                            )}
-                            onChange={() => handleSelectSellerGroup(seller)}
-                          />
+                          {/* Checkbox de grupo apenas se houver itens pagáveis */}
+                          {sellerPayments.some((p) => p.status !== "Pago") && (
+                            <input
+                              type="checkbox"
+                              checked={sellerPayments
+                                .filter((p) => p.status !== "Pago")
+                                .every((p) => selectedPayments.includes(p.id))}
+                              onChange={() => handleSelectSellerGroup(seller)}
+                            />
+                          )}
                         </td>
                         <td colSpan="7">
                           <div className="group-header-content payment-schedule__group-header">
@@ -862,14 +873,19 @@ const Payments = ({ user }) => {
                             selectedPayments.includes(payment.id)
                               ? "selected"
                               : ""
-                          }`}
+                          } ${payment.status === "Pago" ? "paid-row" : ""}`}
+                          style={
+                            payment.status === "Pago" ? { opacity: 0.6 } : {}
+                          }
                         >
                           <td>
-                            <input
-                              type="checkbox"
-                              checked={selectedPayments.includes(payment.id)}
-                              onChange={() => handleSingleSelect(payment.id)}
-                            />
+                            {payment.status !== "Pago" && (
+                              <input
+                                type="checkbox"
+                                checked={selectedPayments.includes(payment.id)}
+                                onChange={() => handleSingleSelect(payment.id)}
+                              />
+                            )}
                           </td>
                           <td className="item-details">
                             <div className="item-wrapper">
@@ -925,10 +941,14 @@ const Payments = ({ user }) => {
                           </td>
                           <td className="text-right">
                             <span
-                              className={`status-badge status-${payment.status.replace(
-                                " ",
-                                "-"
-                              )}`}
+                              className={`status-badge status-${payment.status
+                                .toLowerCase()
+                                .replace(" ", "-")}`}
+                              style={{
+                                backgroundColor:
+                                  getStatusColor(payment.status) + "20",
+                                color: getStatusColor(payment.status),
+                              }}
                             >
                               {payment.status === "atrasado" && (
                                 <AlertCircle size={14} />
