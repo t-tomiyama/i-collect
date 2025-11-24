@@ -244,10 +244,11 @@ export const bindersAPI = {
 };
 
 export const paymentsAPI = {
-  processPayments: async (paymentIds) => {
+  processPayments: async (paymentIds, paymentMethod) => {
     try {
       const response = await api.post("/payments/process", {
         paymentIds,
+        paymentMethod,
       });
 
       if (response.data && response.data.success !== undefined) {

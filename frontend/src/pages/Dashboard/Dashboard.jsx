@@ -36,6 +36,7 @@ import {
   ratingsAPI,
 } from "../../services/api";
 
+// MOCK: Atualizado payment_type para parecer com PaymentTerms
 const MOCK_GUEST_DATA = {
   stats: {
     totalPhotocards: 127,
@@ -55,7 +56,7 @@ const MOCK_GUEST_DATA = {
       seller_name: "lovejurin",
       due_date: new Date().toISOString(),
       status: "vence hoje",
-      payment_type: "Item + Frete",
+      payment_type: "1º Pagamento (Item)",
       ceg_name: "CEG XG",
       late_fee: 0,
     },
@@ -68,7 +69,7 @@ const MOCK_GUEST_DATA = {
       seller_name: "lovejurin",
       due_date: new Date(Date.now() + 86400000 * 2).toISOString(),
       status: "pendente",
-      payment_type: "Item",
+      payment_type: "Item + Frete Int.",
       ceg_name: "CEG XG Mascara",
       late_fee: 0,
     },
@@ -104,6 +105,8 @@ const THEMES = {
 };
 
 const PaymentModal = ({ isVisible, onClose, payments, onPaymentSubmit }) => {
+  const [selectedMethod, setSelectedMethod] = useState("PIX");
+
   if (!isVisible) return null;
 
   const totalAmount = payments.reduce((sum, p) => sum + p.amount, 0);
@@ -167,7 +170,9 @@ const PaymentModal = ({ isVisible, onClose, payments, onPaymentSubmit }) => {
                   {items.map((item) => (
                     <li key={item.id} className="group-card__item">
                       <div className="item-details">
+                        {/* Exibe o payment_type (Termo) e o nome do item */}
                         <span className="item-name truncate">
+                          <strong>{item.payment_type}</strong> -{" "}
                           {item.photocard_name || item.item_name}
                         </span>
                         <span className={`item-status status-${item.status}`}>
@@ -190,12 +195,52 @@ const PaymentModal = ({ isVisible, onClose, payments, onPaymentSubmit }) => {
           })}
         </div>
 
+        {/* --- SELETOR DE MÉTODO DE PAGAMENTO --- */}
+        <div
+          className="payment-method-selector"
+          style={{ marginTop: "20px", marginBottom: "20px" }}
+        >
+          <label
+            htmlFor="method-select"
+            style={{
+              display: "block",
+              marginBottom: "8px",
+              fontSize: "0.9rem",
+              color: "var(--text-secondary)",
+            }}
+          >
+            Selecione a forma de pagamento:
+          </label>
+          <select
+            id="method-select"
+            value={selectedMethod}
+            onChange={(e) => setSelectedMethod(e.target.value)}
+            className="input-field" // Reutiliza estilo do CSS global se houver
+            style={{
+              width: "100%",
+              padding: "12px",
+              borderRadius: "var(--border-radius)",
+              border: "1px solid var(--border-color)",
+              backgroundColor: "var(--bg-secondary)",
+              color: "var(--text-primary)",
+              fontSize: "1rem",
+            }}
+          >
+            <option value="PIX">PIX (Instantâneo)</option>
+            <option value="PicPay">PicPay</option>
+            <option value="Cartao de Credito">Cartão de Crédito</option>
+          </select>
+        </div>
+
         <div className="payment-modal__footer">
           <button className="btn btn-secondary" onClick={onClose}>
             Cancelar
           </button>
-          <button className="btn btn-primary" onClick={onPaymentSubmit}>
-            Confirmar Pagamento Total (R${" "}
+          <button
+            className="btn btn-primary"
+            onClick={() => onPaymentSubmit(selectedMethod)}
+          >
+            Pagar com {selectedMethod} (R${" "}
             {totalAmount.toFixed(2).replace(".", ",")})
           </button>
         </div>
@@ -283,7 +328,7 @@ const DashboardHome = ({
     setIsModalOpen(true);
   };
 
-  const handlePaymentSubmit = async () => {
+  const handlePaymentSubmit = async (method) => {
     if (selectedPayments.length === 0) return;
 
     if (user?.isGuest) {
@@ -296,10 +341,11 @@ const DashboardHome = ({
 
     try {
       setProcessingPayment(true);
-      await paymentsAPI.processPayments(selectedPayments);
+      // Passa o método escolhido para a API
+      await paymentsAPI.processPayments(selectedPayments, method);
 
       alert(
-        `Pagamento de ${selectedPayments.length} item(s) realizado com sucesso!`
+        `Pagamento de ${selectedPayments.length} item(s) realizado com sucesso via ${method}!`
       );
       setSelectedPayments([]);
       setIsModalOpen(false);
@@ -535,25 +581,6 @@ const DashboardHome = ({
         {user && (
           <div className="stat-grid">
             {[
-              /*
-              {
-                label: "Cards no Binder",
-                value: stats.totalPhotocards?.toString() || "0",
-                icon: BookOpen,
-                trend: stats.photocardsThisWeek
-                  ? `+${stats.photocardsThisWeek}`
-                  : "+0",
-                trendType: "positive",
-              },
-              {
-                label: "CEGs Ativas",
-                value: stats.activeCEGs?.toString() || "0",
-                icon: Package,
-                trend: stats.cegsArriving
-                  ? `${stats.cegsArriving} chegando`
-                  : "0 chegando",
-                trendType: "positive",
-              },*/
               {
                 label: "Pagamentos Pendentes",
                 value: showTotalAmount
@@ -740,11 +767,19 @@ const DashboardHome = ({
                                   )}
                                 </div>
                                 <div className="payment-schedule__text-content">
+                                  {/* AJUSTE: Usando payment_type (Termo) e nome do card */}
                                   <span className="payment-schedule__item-name">
                                     {pay.photocard_name || pay.item_name}
                                   </span>
-                                  <span className="payment-schedule__item-type">
-                                    {pay.payment_type}
+                                  <span
+                                    className="payment-schedule__item-type"
+                                    style={{
+                                      color: "var(--theme-primary)",
+                                      fontWeight: "500",
+                                    }}
+                                  >
+                                    {pay.payment_type}{" "}
+                                    {/* Ex: "1º Pagamento", "Frete" */}
                                   </span>
                                   <span className="payment-schedule__item-seller-mobile">
                                     {pay.seller_name || pay.seller_username}
@@ -854,7 +889,6 @@ function Dashboard({ onLogout, user }) {
     setLoading(true);
 
     try {
-      // Carregar ratings em paralelo
       const [rankData] = await Promise.all([
         ratingsAPI.getTopRatings().catch((error) => {
           console.error("Erro ao buscar rankings:", error);
@@ -875,7 +909,6 @@ function Dashboard({ onLogout, user }) {
           setDashboardData(dashData);
         } catch (error) {
           console.error("Erro detalhado ao carregar dashboard:", error);
-          // Fallback para dados vazios
           setDashboardData({
             stats: {
               totalPhotocards: 0,
@@ -898,7 +931,6 @@ function Dashboard({ onLogout, user }) {
   };
 
   useEffect(() => {
-    console.log("User no Dashboard:", user);
     loadDashboardData();
   }, [user]);
 
