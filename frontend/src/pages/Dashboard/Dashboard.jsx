@@ -248,7 +248,17 @@ const PaymentModal = ({ isVisible, onClose, payments, onPaymentSubmit }) => {
     </div>
   );
 };
+const getSellerLabel = (payment) => {
+  if (payment.gom_names) {
+    return Array.isArray(payment.gom_names)
+      ? payment.gom_names.join(", ")
+      : payment.gom_names;
+  }
 
+  return (
+    payment.seller_name || payment.seller_username || "Vendedor Desconhecido"
+  );
+};
 const DashboardHome = ({
   user,
   showTotalAmount,
@@ -420,7 +430,7 @@ const DashboardHome = ({
   };
 
   const groupedPaymentsBySeller = pendingPayments.reduce((acc, pay) => {
-    const seller = pay.seller_name || pay.seller_username;
+    const sellerLabel = getSellerLabel(pay);
     if (!acc[seller]) {
       acc[seller] = [];
     }
@@ -779,7 +789,6 @@ const DashboardHome = ({
                                     }}
                                   >
                                     {pay.payment_type}{" "}
-                                    {/* Ex: "1º Pagamento", "Frete" */}
                                   </span>
                                   <span className="payment-schedule__item-seller-mobile">
                                     {pay.seller_name || pay.seller_username}
