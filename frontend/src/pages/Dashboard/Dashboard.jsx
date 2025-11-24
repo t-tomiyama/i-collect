@@ -36,7 +36,6 @@ import {
   ratingsAPI,
 } from "../../services/api";
 
-// MOCK: Atualizado payment_type para parecer com PaymentTerms
 const MOCK_GUEST_DATA = {
   stats: {
     totalPhotocards: 127,
@@ -104,6 +103,17 @@ const THEMES = {
   gray: { name: "Cinza" },
 };
 
+const getSellerLabel = (payment) => {
+  if (payment.gom_names) {
+    return Array.isArray(payment.gom_names)
+      ? payment.gom_names.join(", ")
+      : payment.gom_names;
+  }
+  return (
+    payment.seller_name || payment.seller_username || "Vendedor Desconhecido"
+  );
+};
+
 const PaymentModal = ({ isVisible, onClose, payments, onPaymentSubmit }) => {
   const [selectedMethod, setSelectedMethod] = useState("PIX");
 
@@ -116,11 +126,11 @@ const PaymentModal = ({ isVisible, onClose, payments, onPaymentSubmit }) => {
   );
 
   const groupedPayments = payments.reduce((acc, pay) => {
-    const seller = pay.seller_name || pay.seller_username;
-    if (!acc[seller]) {
-      acc[seller] = [];
+    const sellerLabel = getSellerLabel(pay);
+    if (!acc[sellerLabel]) {
+      acc[sellerLabel] = [];
     }
-    acc[seller].push(pay);
+    acc[sellerLabel].push(pay);
     return acc;
   }, {});
 
@@ -159,7 +169,8 @@ const PaymentModal = ({ isVisible, onClose, payments, onPaymentSubmit }) => {
             return (
               <div key={seller} className="payment-modal__group-card">
                 <h3 className="group-card__title">
-                  GOM: <strong>{seller}</strong> ({items.length} itens)
+                  Pagamento para: <strong>{seller}</strong> ({items.length}{" "}
+                  itens)
                   {sellerLateFees > 0 && (
                     <span className="late-fee-badge">
                       (+R$ {sellerLateFees.toFixed(2)} de taxas)
@@ -170,7 +181,6 @@ const PaymentModal = ({ isVisible, onClose, payments, onPaymentSubmit }) => {
                   {items.map((item) => (
                     <li key={item.id} className="group-card__item">
                       <div className="item-details">
-                        {/* Exibe o payment_type (Termo) e o nome do item */}
                         <span className="item-name truncate">
                           <strong>{item.payment_type}</strong> -{" "}
                           {item.photocard_name || item.item_name}
@@ -195,7 +205,6 @@ const PaymentModal = ({ isVisible, onClose, payments, onPaymentSubmit }) => {
           })}
         </div>
 
-        {/* --- SELETOR DE MÉTODO DE PAGAMENTO --- */}
         <div
           className="payment-method-selector"
           style={{ marginTop: "20px", marginBottom: "20px" }}
@@ -215,7 +224,7 @@ const PaymentModal = ({ isVisible, onClose, payments, onPaymentSubmit }) => {
             id="method-select"
             value={selectedMethod}
             onChange={(e) => setSelectedMethod(e.target.value)}
-            className="input-field" // Reutiliza estilo do CSS global se houver
+            className="input-field"
             style={{
               width: "100%",
               padding: "12px",
@@ -248,17 +257,7 @@ const PaymentModal = ({ isVisible, onClose, payments, onPaymentSubmit }) => {
     </div>
   );
 };
-const getSellerLabel = (payment) => {
-  if (payment.gom_names) {
-    return Array.isArray(payment.gom_names)
-      ? payment.gom_names.join(", ")
-      : payment.gom_names;
-  }
 
-  return (
-    payment.seller_name || payment.seller_username || "Vendedor Desconhecido"
-  );
-};
 const DashboardHome = ({
   user,
   showTotalAmount,
@@ -302,9 +301,9 @@ const DashboardHome = ({
     }
   };
 
-  const isSellerSelected = (seller) => {
+  const isSellerSelected = (sellerLabel) => {
     const paymentsOfSeller = pendingPayments
-      .filter((p) => (p.seller_name || p.seller_username) === seller)
+      .filter((p) => getSellerLabel(p) === sellerLabel)
       .map((p) => p.id);
     return paymentsOfSeller.every((id) => selectedPayments.includes(id));
   };
@@ -315,11 +314,11 @@ const DashboardHome = ({
     );
   };
 
-  const handleSelectSeller = (seller) => {
+  const handleSelectSeller = (sellerLabel) => {
     const paymentsOfSeller = pendingPayments
-      .filter((p) => (p.seller_name || p.seller_username) === seller)
+      .filter((p) => getSellerLabel(p) === sellerLabel)
       .map((p) => p.id);
-    const isAllSelected = isSellerSelected(seller);
+    const isAllSelected = isSellerSelected(sellerLabel);
 
     if (isAllSelected) {
       setSelectedPayments((prev) =>
@@ -351,7 +350,6 @@ const DashboardHome = ({
 
     try {
       setProcessingPayment(true);
-      // Passa o método escolhido para a API
       await paymentsAPI.processPayments(selectedPayments, method);
 
       alert(
@@ -431,10 +429,10 @@ const DashboardHome = ({
 
   const groupedPaymentsBySeller = pendingPayments.reduce((acc, pay) => {
     const sellerLabel = getSellerLabel(pay);
-    if (!acc[seller]) {
-      acc[seller] = [];
+    if (!acc[sellerLabel]) {
+      acc[sellerLabel] = [];
     }
-    acc[seller].push(pay);
+    acc[sellerLabel].push(pay);
     return acc;
   }, {});
 
@@ -722,8 +720,8 @@ const DashboardHome = ({
                                 className="group-checkbox"
                               />
                               <span>
-                                <strong>GOM: {seller}</strong> (
-                                {payments.length} itens)
+                                <strong>{seller}</strong> ({payments.length}{" "}
+                                itens)
                                 <span className="seller-late-fee">
                                   Taxa de atraso: R${" "}
                                   {payments[0]?.late_fee?.toFixed(2) || "0.00"}{" "}
@@ -777,7 +775,6 @@ const DashboardHome = ({
                                   )}
                                 </div>
                                 <div className="payment-schedule__text-content">
-                                  {/* AJUSTE: Usando payment_type (Termo) e nome do card */}
                                   <span className="payment-schedule__item-name">
                                     {pay.photocard_name || pay.item_name}
                                   </span>
@@ -791,7 +788,7 @@ const DashboardHome = ({
                                     {pay.payment_type}{" "}
                                   </span>
                                   <span className="payment-schedule__item-seller-mobile">
-                                    {pay.seller_name || pay.seller_username}
+                                    {getSellerLabel(pay)}
                                   </span>
                                 </div>
                               </div>
@@ -801,9 +798,7 @@ const DashboardHome = ({
                                 {pay.ceg_name || "-"}
                               </span>
                             </td>
-                            <td className="hidden-md">
-                              {pay.seller_name || pay.seller_username}
-                            </td>
+                            <td className="hidden-md">{getSellerLabel(pay)}</td>
                             <td className="font-bold">
                               R$ {pay.amount.toFixed(2).replace(".", ",")}
                             </td>
